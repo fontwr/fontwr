@@ -5,9 +5,16 @@
   "main": "index.js",
   "dependencies": {
     "chai": "^3.5.0",
+    "follow-redirects": "0.0.7",
+    "inquirer": "^0.12.0",
+    "q": "^1.4.1",
+    "underscore": "^1.8.3",
     "wget": "0.0.1"
   },
   "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-jshint": "^2.0.0",
+    "jshint": "^2.9.1",
     "mocha": "^2.4.5",
     "sinon": "^1.17.3"
   },
