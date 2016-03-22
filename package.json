@@ -8,8 +8,11 @@
     "follow-redirects": "0.0.7",
     "inquirer": "^0.12.0",
     "q": "^1.4.1",
+    "ttf2eot": "^2.0.0",
+    "ttf2woff": "^2.0.1",
+    "ttf2woff2": "^2.0.3",
     "underscore": "^1.8.3",
-    "wget": "0.0.1"
+    "wget": "git://github.com/Pixcell/node-wget.git"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
