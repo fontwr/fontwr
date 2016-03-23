@@ -1,14 +1,16 @@
 'use strict';
 
-var q = require('q');
-var wget = require('wget');
-var https = require('follow-redirects').https;
-var inquirer = require('inquirer');
-var _ = require('underscore');
-var ttf2woff = require('ttf2woff');
-var ttf2woff2 = require('ttf2woff2');
-var ttf2eot = require('ttf2eot');
-var fs = require('fs');
+const q = require('q');
+const wget = require('wget');
+const https = require('follow-redirects').https;
+const inquirer = require('inquirer');
+const _ = require('underscore');
+const ttf2woff = require('ttf2woff');
+const ttf2woff2 = require('ttf2woff2');
+const ttf2eot = require('ttf2eot');
+const fs = require('fs');
+const rimraf = require('rimraf');
+const indentString = require('indent-string');
 
 class FontDownloader{
   constructor(fontName){
@@ -46,16 +48,7 @@ class FontDownloader{
         deferred.reject(new Error('Font not found. Try running the command: fontwr -list'));
       else
         deferred.reject(new Error('HTTP Status Code: ' + res.statusCode));
-      // res.statusCode
-      // console.log(res);
-      // var body = '';
-      // console.log('statusCode: ', res.statusCode);
-      // console.log('body: ', res);
-      // res.setEncoding('utf8');
-
-
-    })
-    .on('error', (e) => {
+    }).on('error', (e) => {
       deferred.reject(new Error(e));
     })
     .end();
@@ -67,14 +60,15 @@ class FontDownloader{
     var filteredFonts = [];
     fonts.forEach(function(font){
       if (font.name.match(/.ttf$/i))
-        filteredFonts.push(font);
+        filteredFonts.push(font.name.replace(/.ttf$/i, ''));
     });
     return filteredFonts;
   }
 
   download(fileName){
+    console.log(fileName);
     var deferred = q.defer();
-    wget.download(this.baseRawPath + this.fontName + '/' + fileName, this.output + fileName)
+    wget.download(this.baseRawPath + this.fontName + '/' + fileName + '.ttf', this.output + fileName + '.ttf')
       .on('error', function(err){
         deferred.reject(new Error(err));
       })
@@ -87,19 +81,19 @@ class FontDownloader{
 
 class FontConverter{
   convert(file, extension){
-    var converter = []
+    var converter = [];
     converter['.woff'] = ttf2woff;
     converter['.woff2'] = ttf2woff2;
     converter['.eot'] = ttf2eot;
 
     var deferred = q.defer();
-    fs.readFile('tmp/' + file, function(err, data){
+    fs.readFile('tmp/' + file + '.ttf', function(err, data){
       if (err)
         deferred.reject(new Error(err));
 
       var ttf = new Uint8Array(data);
       var convertedFont = new Buffer(converter[extension](ttf).buffer);
-      fs.writeFile('tmp/' + file.replace(/.ttf$/i, extension), convertedFont, function(err){
+      fs.writeFile('tmp/' + file + extension, convertedFont, function(err){
         if (err)
           deferred.reject(new Error(err));
         deferred.resolve();
@@ -107,32 +101,73 @@ class FontConverter{
     });
     return deferred.promise;    
   }
-
-  // convert(fontFamily, extension){
-  //   base(fontFamily, extension)
-  // }
-
-  // toWoff(file){
-  //   base(file, '.woff');
-  // }
-
-  // toWoff2(file){
-  //   base(file, '.woff2');
-  // }
-
-  // toEot(file){
-  //   base(file, '.eot');
-  // }
 }
 
-// class FontFaceCreator{
+class FontFaceCreator{
+  constructor(){
+    this.output = '';
+  }
 
-// }
+  generateSources(fontName, extensions){
+    var hasTTF = false;
+    var sources = '';
+
+    if (_.contains(extensions, '.eot')){
+      var eotIndex = extensions.indexOf('.eot');
+      extensions.splice(eotIndex, 1);
+      sources += `src: url('fonts/${fontName}.eot');\n` + 
+        `src: url('fonts/${fontName}.eot?#iefix') format('embedded-opentype');\n`;
+    }
+    
+    if (extensions.length === 0)
+      sources += `src: local('${fontName}');\n`;
+    else{
+      sources += `src: local('${fontName}'),\n`;
+
+      if (_.contains(extensions, '.ttf')){
+        hasTTF = true;
+        let ttfIndex = extensions.indexOf('.ttf');
+        extensions.splice(ttfIndex, 1);
+      }
+
+      extensions.forEach(function(extension, i){
+        sources += indentString(`url('fonts/${fontName}${extension}') format('${extension.replace('.', '')}')` + 
+          `${(i === extensions.length - 1 && !hasTTF) ? `;` : `,`}` +
+          `\n`, ' ', 4);
+      });
+
+      if (hasTTF)
+          sources += indentString(`url('fonts/${fontName}.ttf') format('truetype');\n`, ' ', 4);
+    }
+    return sources;
+  }
+
+  createFontFaceFile(fontName, extensions){
+    this.output += `@font-face {\n` + 
+      indentString(`font-family: '${fontName}';\n` +
+        this.generateSources(fontName, extensions) + 
+        `font-weight: normal;\n` +
+        `font-style: normal;\n`, ' ', 2) +
+      `}\n`;
+    // console.log(this.output);
+  }
+}
 
 module.exports.FontDownloader = FontDownloader;
 
 var fr = new FontDownloader('RobotoSlab');
 var fc = new FontConverter();
+var ffc = new FontFaceCreator();
+// ffc.createFontFaceFile('Test-Light', ['.woff', '.ttf']);
+
+try{
+  fs.mkdirSync('tmp');
+}catch(err){
+  if(err.code == 'EEXIST')
+    rimraf.sync('tmp/*');
+  else 
+    throw err;
+}
 
 fr.verify().then(function(data){
   inquirer.prompt([{
@@ -140,7 +175,7 @@ fr.verify().then(function(data){
     pageSize: 10,
     message: 'Choose the Font Family:',
     name: 'fontFamilies',
-    choices: fr.filter(data)
+    choices: fr.filter(data) //refactor
 
   }], function(answers){
     var downloadQueue = [];
@@ -152,19 +187,29 @@ fr.verify().then(function(data){
       inquirer.prompt([{
         type: 'checkbox',
         pageSize: 10,
-        message: 'Select which format you want inside the font-face:',
+        message: 'Select which formats you want inside the font-face:',
         name: 'fontFormats',
-        choices: [{name: '.woff'}, {name: '.woff2'}, {name: '.eot'}]
+        choices: [{name: '.woff2'}, {name: '.woff'}, 
+          {name: '.eot'}, {name: '.ttf'}]
       }], function(answers){      
+        var conversionQueue = [];
         answers.fontFormats.forEach(function(fontFormat){
+          if (fontFormat === '.ttf')
+            return;
+
           filesNames.forEach(function(fileName){
-            fc.convert(fileName.value, fontFormat);
-          })
-        });      
+            conversionQueue.push(fc.convert(fileName.value, fontFormat));
+          });
+        });
+
+        q.allSettled(conversionQueue).then(function(){
+          filesNames.forEach(function(fileName){
+            ffc.createFontFaceFile(fileName.value, answers.fontFormats.slice());
+          });
+          fs.writeFileSync('fonts.css', ffc.output);
+        });        
       });
     });
-
-
   });
 
 }, function(err){
