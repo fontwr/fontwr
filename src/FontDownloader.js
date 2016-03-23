@@ -8,7 +8,7 @@ module.exports = class FontDownloader{
   constructor(fontName){
     this.fontName = fontName.toLowerCase();
     this.fontsOptions = [];
-    this.baseRawPath = 'https://raw.githubusercontent.com/google/fonts/master/apache/'
+    this.baseRawPath = 'https://raw.githubusercontent.com/google/fonts/master/apache/';
     this.baseAPIPath = 'https://api.github.com/repos/google/fonts/contents/apache/';
     this.output = 'tmp/';
   }
@@ -69,4 +69,4 @@ module.exports = class FontDownloader{
       });
     return deferred.promise;
   }
-}
+};

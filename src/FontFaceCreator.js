@@ -1,6 +1,5 @@
 'use strict';
 
-const q = require('q');
 const _ = require('underscore');
 const indentString = require('indent-string');
 
@@ -52,4 +51,4 @@ module.exports = class FontFaceCreator{
       `}\n`;
     // console.log(this.output);
   }
-}
+};

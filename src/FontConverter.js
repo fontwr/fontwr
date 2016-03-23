@@ -28,4 +28,4 @@ module.exports = class FontConverter{
     });
     return deferred.promise;    
   }
-}
+};

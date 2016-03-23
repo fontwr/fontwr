@@ -1,13 +1,9 @@
 'use strict';
 
 const q = require('q');
-const wget = require('wget');
-const https = require('follow-redirects').https;
 const inquirer = require('inquirer');
-const _ = require('underscore');
 const fs = require('fs');
 const rimraf = require('rimraf');
-const indentString = require('indent-string');
 const FontDownloader = require('./FontDownloader.js');
 const FontConverter = require('./FontConverter');
 const FontFaceCreator = require('./FontFaceCreator');
@@ -22,7 +18,7 @@ var ffc = new FontFaceCreator();
 try{
   fs.mkdirSync('tmp');
 }catch(err){
-  if(err.code == 'EEXIST')
+  if(err.code === 'EEXIST')
     rimraf.sync('tmp/*');
   else 
     throw err;
