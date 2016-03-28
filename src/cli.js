@@ -4,76 +4,96 @@ const q = require('q');
 const inquirer = require('inquirer');
 const fs = require('fs');
 const rimraf = require('rimraf');
-const FontDownloader = require('./FontDownloader.js');
+const FontDownloader = require('./FontDownloader');
 const FontConverter = require('./FontConverter');
 const FontFaceCreator = require('./FontFaceCreator');
 
-// console.log(FontDownloader);
+class CLI{
+  static cleanTmpDirectory(){
+    try{
+      fs.mkdirSync('tmp');
+    }catch(err){
+      if(err.code === 'EEXIST')
+        rimraf.sync('tmp/*');
+      else 
+        throw err;
+    }    
+  }
 
-var fr = new FontDownloader('RobotoSlab');
-var fc = new FontConverter();
-var ffc = new FontFaceCreator();
-// ffc.createFontFaceFile('Test-Light', ['.woff', '.ttf']);
+  static chooseFonts(){
+    const fr = new FontDownloader('RobotoSlab');
 
-try{
-  fs.mkdirSync('tmp');
-}catch(err){
-  if(err.code === 'EEXIST')
-    rimraf.sync('tmp/*');
-  else 
-    throw err;
-}
-
-fr.verify().then(function(data){
-  inquirer.prompt([{
-    type: 'checkbox',
-    pageSize: 10,
-    message: 'Choose the Font Family:',
-    name: 'fontFamilies',
-    choices: fr.filter(data) //refactor
-
-  }], function(answers){
-    var downloadQueue = [];
-    answers.fontFamilies.forEach(function(fontFamily){
-      downloadQueue.push(fr.download(fontFamily));
-    });
-
-    q.allSettled(downloadQueue).then(function(filesNames){
+    //change fr to fd OR fontDownloader<<
+    fr.verify().then((data) => {
       inquirer.prompt([{
         type: 'checkbox',
         pageSize: 10,
-        message: 'Select which formats you want inside the font-face:',
-        name: 'fontFormats',
-        choices: [{name: '.woff2'}, {name: '.woff'}, 
-          {name: '.eot'}, {name: '.ttf'}]
-      }], function(answers){      
-        var conversionQueue = [];
-        answers.fontFormats.forEach(function(fontFormat){
-          if (fontFormat === '.ttf')
-            return;
+        message: 'Choose the Font Family:',
+        name: 'fontFamilies',
+        choices: fr.filter(data) //refactor
 
-          filesNames.forEach(function(fileName){
-            conversionQueue.push(fc.convert(fileName.value, fontFormat));
-          });
+      }], (answers) => {
+        CLI.downloadQueue = [];
+        answers.fontFamilies.forEach((fontFamily) => {
+          console.log(this.downloadQueue)
+          this.downloadQueue.push(fr.download(fontFamily));
         });
+        this.downloadFonts();
+      })}, function(err){
+        console.log(err.message);
+      });   
+  }
 
-        q.allSettled(conversionQueue).then(function(){
-          filesNames.forEach(function(fileName){
-            ffc.createFontFaceFile(fileName.value, answers.fontFormats.slice());
-          });
-          fs.writeFileSync('fonts.css', ffc.output);
+  static downloadFonts(){
+    // if (!global)
+      q.allSettled(this.downloadQueue).then((filesNames) => {
+        inquirer.prompt([{
+          type: 'checkbox',
+          pageSize: 10,
+          message: 'Select which formats you want inside the font-face:',
+          name: 'fontFormats',
+          choices: [{name: '.woff2'}, {name: '.woff'}, 
+            {name: '.eot'}, {name: '.ttf'}]
+        }], (answers) => {
+          this.convertFonts(answers, filesNames);
+        });
+      }, function(err){
+        console.log(err.message)
+      });
+  }
 
-          // cli.copy
+  static convertFonts(answers, filesNames){
+    const fc = new FontConverter();
 
-          // fs.rename('tmp/RobotoSlab-Bold.ttf', 'fonts/asd.ttf');
-          // fs.createReadStream('tmp/*')
-            // .pipe(fs.createWriteStream('fonts/RobotoSlab-Bold.ttf'));
-        });        
+    this.conversionQueue = [];
+    answers.fontFormats.forEach((fontFormat) => {
+      if (fontFormat === '.ttf')
+        return;
+
+      filesNames.forEach((fileName) => {
+        this.conversionQueue.push(fc.convert(fileName.value, fontFormat));
       });
     });
-  });
 
-}, function(err){
-  console.log(err.message);
-});
+    q.allSettled(this.conversionQueue).then(() => {
+      this.createFontFaceFile(answers.fontFormats, filesNames);
+    });
+  }
+
+  static createFontFaceFile(answers, filesNames){
+    const ffc = new FontFaceCreator();
+    filesNames.forEach(function(fileName){
+      ffc.createFontFace(fileName.value, answers.slice());
+    });
+    fs.writeFileSync('fonts.css', ffc.output);
+  }
+
+  static execute(){
+    this.cleanTmpDirectory();
+    this.chooseFonts();
+  }
+}
+
+CLI.execute();
+
 
