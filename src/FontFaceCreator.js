@@ -33,16 +33,16 @@ module.exports = class FontFaceCreator{
       extensions.forEach(function(extension, i){
         sources += indentString(`url('fonts/${fontName}${extension}') format('${extension.replace('.', '')}')` + 
           `${(i === extensions.length - 1 && !hasTTF) ? `;` : `,`}` +
-          `\n`, ' ', 4);
+          `\n`, ' ', 2);
       });
 
       if (hasTTF)
-          sources += indentString(`url('fonts/${fontName}.ttf') format('truetype');\n`, ' ', 4);
+          sources += indentString(`url('fonts/${fontName}.ttf') format('truetype');\n`, ' ', 2);
     }
     return sources;
   }
 
-  createFontFaceFile(fontName, extensions){
+  createFontFace(fontName, extensions){
     this.output += `@font-face {\n` + 
       indentString(`font-family: '${fontName}';\n` +
         this.generateSources(fontName, extensions) + 
