@@ -6,8 +6,7 @@ const wget = require('wget');
 const https = require('follow-redirects').https;
 
 module.exports = class FontRepository{
-  constructor(fontName){
-    this.fontsOptions = [];
+  constructor(){
     this.baseRawPath = 'https://raw.githubusercontent.com/raphaklaus/fontwr-fonts/master/fonts/';
     this.baseAPIPath = 'api.github.com';
     this.repositoryPath = '/repos/raphaklaus/fontwr-fonts/contents/fonts/';
