@@ -55,7 +55,6 @@ module.exports = class FontRepository{
 
   download(fileName){
     var deferred = q.defer();
-    console.log(this.baseRawPath + this.fontName + '/' + fileName + '.ttf');
     wget.download(this.baseRawPath + this.fontName + '/' + fileName + '.ttf', this.output + fileName + '.ttf')
       .on('error', function(err){
         deferred.reject(new Error(err));
