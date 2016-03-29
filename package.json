@@ -2,7 +2,9 @@
   "name": "fontwr",
   "version": "0.1.0",
   "description": "A font manager for web projects",
-  "main": "index.js",
+  "bin": {
+    "fontwr": "./src/cli.js"
+  },
   "dependencies": {
     "chai": "^3.5.0",
     "follow-redirects": "0.0.7",
@@ -14,7 +16,8 @@
     "ttf2woff": "^2.0.1",
     "ttf2woff2": "^2.0.3",
     "underscore": "^1.8.3",
-    "wget": "git://github.com/Pixcell/node-wget.git"
+    "wget": "git://github.com/Pixcell/node-wget.git",
+    "yargs": "^4.3.2"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
