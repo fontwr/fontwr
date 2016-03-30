@@ -101,8 +101,12 @@ class CLI{
         pageSize: 10,
         message: 'Choose the Font Family:',
         name: 'fontFamilies',
-        choices: CLI.filter(data)
-
+        choices: CLI.filter(data),
+        validate: function(answers){
+          if (answers.length === 0)
+            return 'You must choose at least 1 font.'
+          return true;
+        }
       }], (answers) => {
         CLI.downloadQueue = [];
         answers.fontFamilies.forEach((fontFamily) => {
@@ -133,7 +137,12 @@ class CLI{
           message: 'Select which formats you want inside the font-face:',
           name: 'fontExtensions',
           choices: [{name: '.woff2'}, {name: '.woff'},
-            {name: '.eot'}, {name: '.ttf'}]
+            {name: '.eot'}, {name: '.ttf'}],
+          validate: function(answers){
+            if (answers.length === 0)
+              return 'You must choose at least 1 format.'
+            return true;
+          }
         }], (answers) => {
           this.convertFonts(answers, filesNames);
         });
@@ -147,6 +156,7 @@ class CLI{
     const fontConverter = new FontConverter();
     this.conversionQueue = [];
 
+    // todo: use spinner here too
     console.log('Converting...');
 
     answers.fontExtensions.forEach((fontFormat) => {
@@ -159,8 +169,6 @@ class CLI{
     });
 
     q.allSettled(this.conversionQueue).then((filesNamesWithExtension) => {
-      convertSpinner.stop(true);
-      console.log('acabou')
       this.createOrUseDirectory('fonts');
 
       filesNamesWithExtension.forEach((fileNameAndExtension) => {
@@ -169,6 +177,8 @@ class CLI{
       });
 
       this.createFontFaceFile(answers.fontExtensions, filesNames);
+    }, (error) => {
+      console.log(error);
     });
   }
 
@@ -214,7 +224,6 @@ class CLI{
       .usage('fontwr <command> [options]')
       .demand(1)
       .help('h')
-      .strict()
       .command('list', 'List all availables fonts')
       .command('get', 'List all availables fonts')
       .example('fontwr get opensans', 'Get Open Sans font')
