@@ -15,8 +15,8 @@ module.exports = class FontFaceCreator{
     if (_.contains(extensions, '.eot')){
       var eotIndex = extensions.indexOf('.eot');
       extensions.splice(eotIndex, 1);
-      sources += `src: url('..fonts/${fontName}.eot');\n` +
-        `src: url('..fonts/${fontName}.eot?#iefix') format('embedded-opentype');\n`;
+      sources += `src: url('../fonts/${fontName}.eot');\n` +
+        `src: url('../fonts/${fontName}.eot?#iefix') format('embedded-opentype');\n`;
     }
 
     if (extensions.length === 0)
@@ -30,14 +30,14 @@ module.exports = class FontFaceCreator{
         extensions.splice(ttfIndex, 1);
       }
 
-      extensions.forEach(function(extension, i){
-        sources += indentString(`url('..fonts/${fontName}${extension}') format('${extension.replace('.', '')}')` +
+      extensions.forEach((extension, i) => {
+        sources += indentString(`url('../fonts/${fontName}${extension}') format('${extension.replace('.', '')}')` +
           `${(i === extensions.length - 1 && !hasTTF) ? `;` : `,`}` +
           `\n`, ' ', 2);
       });
 
       if (hasTTF)
-          sources += indentString(`url('..fonts/${fontName}.ttf') format('truetype');\n`, ' ', 2);
+          sources += indentString(`url('../fonts/${fontName}.ttf') format('truetype');\n`, ' ', 2);
     }
     return sources;
   }
