@@ -9,7 +9,6 @@ const q = require('q'),
   FontConverter = require('./FontConverter'),
   FontFaceCreator = require('./FontFaceCreator'),
   cpr = require('cpr'),
-  regedit = require('regedit'),
   pkg = require('../package.json'),
   checkUpdate = require('check-update'),
   colors = require('colors'),
@@ -55,6 +54,7 @@ class CLI{
   }
 
   static registerFonts(filesNames){
+    const regedit = require('regedit');
     filesNames.forEach((fileName) => {
       var registryName = fileName.value + ' (TrueType)';
       regedit.putValue({
