@@ -12,7 +12,8 @@ const q = require('q'),
   regedit = require('regedit'),
   pkg = require('../package.json'),
   checkUpdate = require('check-update'),
-  colors = require('colors');
+  colors = require('colors'),
+  spinner = require('cli-spinner').Spinner;
 
 class CLI{
   static createOrUseDirectory(directory, callback){
@@ -28,14 +29,14 @@ class CLI{
   }
 
   static cleanDirectory(directory){
-    this.createOrUseDirectory(directory, function(){
+    this.createOrUseDirectory(directory, () => {
       rimraf.sync(directory + '/*');
     });
   }
 
   static filter(fonts){
     var filteredFonts = [];
-    fonts.forEach(function(font){
+    fonts.forEach((font) =>{
       if (font.name.match(/.ttf$/i))
         filteredFonts.push(font.name.replace(/.ttf$/i, ''));
     });
@@ -44,11 +45,11 @@ class CLI{
 
   static listAllFonts(){
     const fontRepository = new FontRepository(this.fontFamily);
-    fontRepository.list().then(function(list){
-      list.forEach(function(element){
+    fontRepository.list().then((list) => {
+      list.forEach((element) => {
         console.log('- ' + element);
       });
-    }, function(error){
+    }, (error) => {
       console.log(error.message.error);
     });
   }
@@ -63,7 +64,7 @@ class CLI{
                 type: 'REG_SZ'
             }
        }
-      }, function(error) {
+      }, (error) => {
         if (error)
           console.log(error);
       });
@@ -117,7 +118,12 @@ class CLI{
   }
 
   static downloadFonts(){
+    var downloadSpinner = new spinner('Downloading.. %s');
+    downloadSpinner.setSpinnerString('|/-\\');
+    downloadSpinner.start();
+
     q.allSettled(this.downloadQueue).then((filesNames) => {
+      downloadSpinner.stop(true);
       if (this.global){
         this.copyToSystemFontDirectory(filesNames);
       }else{
@@ -139,8 +145,10 @@ class CLI{
 
   static convertFonts(answers, filesNames){
     const fontConverter = new FontConverter();
-
     this.conversionQueue = [];
+
+    console.log('Converting...');
+
     answers.fontExtensions.forEach((fontFormat) => {
       if (fontFormat === '.ttf')
         return;
@@ -151,6 +159,8 @@ class CLI{
     });
 
     q.allSettled(this.conversionQueue).then((filesNamesWithExtension) => {
+      convertSpinner.stop(true);
+      console.log('acabou')
       this.createOrUseDirectory('fonts');
 
       filesNamesWithExtension.forEach((fileNameAndExtension) => {
@@ -195,7 +205,7 @@ class CLI{
   }
 
   static execute(){
-    checkUpdate({packageName: pkg.name, packageVersion: pkg.version, isCLI: true}, function (error, latestVersion, defaultMessage) {
+    checkUpdate({packageName: pkg.name, packageVersion: pkg.version, isCLI: true}, (error, latestVersion, defaultMessage) => {
       if (!error)
         console.log(defaultMessage);
     });
