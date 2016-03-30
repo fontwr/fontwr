@@ -32,7 +32,7 @@ module.exports = class FontRepository{
     https.request(options, (res) => {
       var body = [];
       if (res.statusCode === 200){
-        res.on('data', function(chunk) {
+        res.on('data', (chunk) => {
           body += chunk;
         });
 
@@ -55,10 +55,10 @@ module.exports = class FontRepository{
   download(fileName){
     var deferred = q.defer();
     wget.download(this.baseRawPath + this.fontName + '/' + fileName + '.ttf', this.output + fileName + '.ttf')
-      .on('error', function(err){
+      .on('error', (err) => {
         deferred.reject(new Error(err));
       })
-      .on('end', function(){
+      .on('end', () => {
         deferred.resolve(fileName);
       });
     return deferred.promise;
@@ -79,7 +79,7 @@ module.exports = class FontRepository{
     https.request(options, (res) => {
       var body = [];
       if (res.statusCode === 200){
-        res.on('data', function(chunk) {
+        res.on('data', (chunk) => {
           body += chunk;
         });
 
