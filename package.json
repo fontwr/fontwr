@@ -8,6 +8,7 @@
   "dependencies": {
     "chai": "^3.5.0",
     "check-update": "0.0.8",
+    "cli-spinner": "^0.2.5",
     "colors": "^1.1.2",
     "cpr": "^1.0.0",
     "follow-redirects": "0.0.7",
