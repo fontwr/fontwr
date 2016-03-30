@@ -23,9 +23,9 @@ module.exports = class FontConverter{
       fs.writeFile('tmp/' + file + extension, convertedFont, function(err){
         if (err)
           deferred.reject(new Error(err));
-        deferred.resolve();
+        deferred.resolve(file + extension);
       });
     });
-    return deferred.promise;    
+    return deferred.promise;
   }
 };
