@@ -15,7 +15,6 @@
     "indent-string": "^2.1.0",
     "inquirer": "^0.12.0",
     "q": "^1.4.1",
-    "regedit": "^2.2.6",
     "rimraf": "^2.5.2",
     "ttf2eot": "^2.0.0",
     "ttf2woff": "^2.0.1",
@@ -23,6 +22,9 @@
     "underscore": "^1.8.3",
     "wget": "git://github.com/Pixcell/node-wget.git",
     "yargs": "^4.3.2"
+  },
+  "optionalDependencies":{
+    "regedit": "^2.2.6"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
