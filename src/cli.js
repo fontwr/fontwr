@@ -1,25 +1,36 @@
 #!/usr/bin/env node
 'use strict';
 
-const q = require('q');
-const inquirer = require('inquirer');
-const fs = require('fs');
-const rimraf = require('rimraf');
-const https = require('follow-redirects').https;
-const FontRepository = require('./FontRepository');
-const FontConverter = require('./FontConverter');
-const FontFaceCreator = require('./FontFaceCreator');
+const q = require('q'),
+  inquirer = require('inquirer'),
+  fs = require('fs'),
+  rimraf = require('rimraf'),
+  FontRepository = require('./FontRepository'),
+  FontConverter = require('./FontConverter'),
+  FontFaceCreator = require('./FontFaceCreator'),
+  cpr = require('cpr'),
+  regedit = require('regedit'),
+  pkg = require('../package.json'),
+  checkUpdate = require('check-update'),
+  colors = require('colors');
 
 class CLI{
-  static cleanTmpDirectory(){
+  static createOrUseDirectory(directory, callback){
     try{
-      fs.mkdirSync('tmp');
+      fs.mkdirSync(directory);
     }catch(error){
-      if(error.code === 'EEXIST')
-        rimraf.sync('tmp/*');
-      else
+      if (error.code === 'EEXIST'){
+        if (callback)
+          callback();
+      }else
         throw error;
     }
+  }
+
+  static cleanDirectory(directory){
+    this.createOrUseDirectory(directory, function(){
+      rimraf.sync(directory + '/*');
+    });
   }
 
   static filter(fonts){
@@ -34,13 +45,48 @@ class CLI{
   static listAllFonts(){
     const fontRepository = new FontRepository(this.fontFamily);
     fontRepository.list().then(function(list){
-      // var newList = [];
       list.forEach(function(element){
         console.log('- ' + element);
-      })
-      // console.log(newList);
+      });
     }, function(error){
-      console.log(error.message);
+      console.log(error.message.error);
+    });
+  }
+
+  static registerFonts(filesNames){
+    filesNames.forEach((fileName) => {
+      var registryName = fileName.value + ' (TrueType)';
+      regedit.putValue({
+        'HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts': {
+            [registryName]: {
+                value: fileName.value + '.ttf',
+                type: 'REG_SZ'
+            }
+       }
+      }, function(error) {
+        if (error)
+          console.log(error);
+      });
+    });
+  }
+
+  static copyToSystemFontDirectory(filesNames){
+    var fontsDirectory = [];
+    fontsDirectory.win32 = '\\Windows\\Fonts';
+    fontsDirectory.darwin = '/Library/Fonts';
+    fontsDirectory.linux = '/usr/share/fonts';
+
+    cpr('tmp', fontsDirectory[process.platform],{
+      deleteFirst: false,
+      overwrite: false,
+      confirm: true
+    }, (error) => {
+      if (error)
+        console.log(error);
+      else if (process.platform === 'win32')
+        this.registerFonts(filesNames);
+
+      console.log('√ Fonts copied to system\'s fonts directory.'.green);
     });
   }
 
@@ -62,37 +108,40 @@ class CLI{
           this.downloadQueue.push(fontRepository.download(fontFamily));
         });
         this.downloadFonts();
-      })}, (error) => {
+      }, (error) => {
         console.log(error.message);
       });
+    }, (error) =>{
+      console.log(error.message)
+    });
   }
 
   static downloadFonts(){
-    if (this.global)
-      console.log('is global');
-    else{
-      q.allSettled(this.downloadQueue).then((filesNames) => {
+    q.allSettled(this.downloadQueue).then((filesNames) => {
+      if (this.global){
+        this.copyToSystemFontDirectory(filesNames);
+      }else{
         inquirer.prompt([{
           type: 'checkbox',
           pageSize: 10,
           message: 'Select which formats you want inside the font-face:',
-          name: 'fontFormats',
+          name: 'fontExtensions',
           choices: [{name: '.woff2'}, {name: '.woff'},
             {name: '.eot'}, {name: '.ttf'}]
         }], (answers) => {
           this.convertFonts(answers, filesNames);
         });
-      }, (error) => {
-        console.log(error.message)
-      });
-    }
+      }
+    }, (error) => {
+      console.log(error.message);
+    });
   }
 
   static convertFonts(answers, filesNames){
     const fontConverter = new FontConverter();
 
     this.conversionQueue = [];
-    answers.fontFormats.forEach((fontFormat) => {
+    answers.fontExtensions.forEach((fontFormat) => {
       if (fontFormat === '.ttf')
         return;
 
@@ -101,20 +150,56 @@ class CLI{
       });
     });
 
-    q.allSettled(this.conversionQueue).then(() => {
-      this.createFontFaceFile(answers.fontFormats, filesNames);
+    q.allSettled(this.conversionQueue).then((filesNamesWithExtension) => {
+      this.createOrUseDirectory('fonts');
+
+      filesNamesWithExtension.forEach((fileNameAndExtension) => {
+        fs.createReadStream('tmp/' + fileNameAndExtension.value)
+          .pipe(fs.createWriteStream('fonts/' + fileNameAndExtension.value));
+      });
+
+      this.createFontFaceFile(answers.fontExtensions, filesNames);
     });
   }
 
   static createFontFaceFile(answers, filesNames){
     const fontFaceCreator = new FontFaceCreator();
+    this.createOrUseDirectory('css');
+
     filesNames.forEach((fileName) => {
       fontFaceCreator.createFontFace(fileName.value, answers.slice());
     });
-    fs.writeFileSync('fonts.css', fontFaceCreator.output);
+
+    fs.stat('css/fonts.css', (error, stat) => {
+      if (stat){
+        inquirer.prompt([{
+          type: 'confirm',
+          pageSize: 10,
+          message: 'css/fonts.css already exists. Overwrite?',
+          name: 'overwrite'
+        }], (answer) => {
+          if (answer.overwrite)
+            fs.writeFile('css/fonts.css', fontFaceCreator.output, (error) => {
+              if (error) throw error;
+
+              console.log('√ Fonts placed in /fonts and font face overwritten in /css.'.green);
+            });
+        });
+      }else
+        fs.writeFile('css/fonts.css', fontFaceCreator.output, (error) => {
+          if (error) throw error;
+
+          console.log('√ Fonts placed in /fonts and font face in /css.'.green);
+        });
+    })
   }
 
   static execute(){
+    checkUpdate({packageName: pkg.name, packageVersion: pkg.version, isCLI: true}, function (error, latestVersion, defaultMessage) {
+      if (!error)
+        console.log(defaultMessage);
+    });
+
     var yargs = require('yargs')
       .usage('fontwr <command> [options]')
       .demand(1)
@@ -128,7 +213,7 @@ class CLI{
       .describe('g', 'Download font to the system\'s font directory')
       .alias('h', 'help');
 
-    var command = yargs.argv._[0]
+    var command = yargs.argv._[0];
 
     if (command === 'list')
       this.listAllFonts();
@@ -142,7 +227,7 @@ class CLI{
       this.fontFamily = yargs.argv._[1].toString();
       this.global = yargs.argv.g;
 
-      this.cleanTmpDirectory();
+      this.cleanDirectory('tmp');
       this.chooseFonts();
     }
   }
