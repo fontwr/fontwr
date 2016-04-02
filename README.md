@@ -27,3 +27,7 @@ Clone, then:
 `gulp`
 
 `npm test`
+
+--
+
+Logo designed by [Beatriz Cajaty](be.net/Cajaty).
