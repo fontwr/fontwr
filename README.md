@@ -30,4 +30,4 @@ Clone, then:
 
 --
 
-Logo designed by [Beatriz Cajaty](be.net/Cajaty).
+Logo designed by [Beatriz Cajaty](http://be.net/Cajaty).
