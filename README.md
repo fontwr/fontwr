@@ -1,10 +1,10 @@
-# fontwr
-
-![fontwr working](http://i.giphy.com/3o7WTw3jdEOXYUIsBW.gif)
+![Logo](logo.png)
 
 A font manager for web projects
 
 It allow you to download free fonts, convert, generate font faces and install into system's font directory.
+
+![fontwr working](http://i.giphy.com/3o7WTw3jdEOXYUIsBW.gif)
 
 ## Installation
 `npm install fontwr -g`
