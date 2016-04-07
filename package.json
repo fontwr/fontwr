@@ -23,7 +23,7 @@
     "wget": "git://github.com/Pixcell/node-wget.git",
     "yargs": "^4.3.2"
   },
-  "optionalDependencies":{
+  "optionalDependencies": {
     "regedit": "^2.2.6"
   },
   "devDependencies": {
@@ -31,6 +31,7 @@
     "gulp-jshint": "^2.0.0",
     "jshint": "^2.9.1",
     "mocha": "^2.4.5",
+    "nock": "^7.7.3",
     "sinon": "^1.17.3"
   },
   "scripts": {
