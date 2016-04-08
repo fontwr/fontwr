@@ -6,6 +6,8 @@ It allow you to download free fonts, convert, generate font faces and install in
 
 ![fontwr working](http://i.giphy.com/3o7WTw3jdEOXYUIsBW.gif)
 
+[![Build Status](https://travis-ci.org/raphaklaus/fontwr.png)](https://travis-ci.org/raphaklaus/fontwr)
+
 ## Installation
 `npm install fontwr -g`
 
