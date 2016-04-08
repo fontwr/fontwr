@@ -104,7 +104,7 @@ class CLI{
         choices: CLI.filter(data),
         validate: function(answers){
           if (answers.length === 0)
-            return 'You must choose at least 1 font.'
+            return 'You must choose at least 1 font.';
           return true;
         }
       }], (answers) => {
@@ -117,7 +117,7 @@ class CLI{
         console.log(error.message);
       });
     }, (error) =>{
-      console.log(error.message)
+      console.log(error.message);
     });
   }
 
@@ -140,7 +140,7 @@ class CLI{
             {name: '.eot'}, {name: '.ttf'}],
           validate: function(answers){
             if (answers.length === 0)
-              return 'You must choose at least 1 format.'
+              return 'You must choose at least 1 format.';
             return true;
           }
         }], (answers) => {
@@ -211,7 +211,7 @@ class CLI{
 
           console.log('√ Fonts placed in /fonts and font face in /css.'.green);
         });
-    })
+    });
   }
 
   static execute(){
