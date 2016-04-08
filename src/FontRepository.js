@@ -24,12 +24,11 @@ module.exports = class FontRepository{
       path: this.repositoryPath + this.fontName,
       headers: {
         'Content-Type': 'application/json',
-        'user-agent': 'fontwer'
-      },
-      method: 'GET'
+        'user-agent': 'fontwr'
+      }
     };
 
-    https.request(options, (res) => {
+    https.get(options, (res) => {
       var body = [];
       if (res.statusCode === 200){
         res.on('data', (chunk) => {
@@ -45,9 +44,8 @@ module.exports = class FontRepository{
       else
         deferred.reject(new Error('HTTP Status Code: ' + res.statusCode));
     }).on('error', (e) => {
-      deferred.reject(new Error(e));
-    })
-    .end();
+      deferred.reject(e);
+    }).end();
 
     return deferred.promise;
   }
@@ -55,8 +53,8 @@ module.exports = class FontRepository{
   download(fileName){
     var deferred = q.defer();
     wget.download(this.baseRawPath + this.fontName + '/' + fileName + '.ttf', this.output + fileName + '.ttf')
-      .on('error', (err) => {
-        deferred.reject(new Error(err));
+      .on('error', (error) => {
+        deferred.reject(new Error(error));
       })
       .on('end', () => {
         deferred.resolve(fileName);
@@ -71,12 +69,11 @@ module.exports = class FontRepository{
       path: this.repositoryPath,
       headers: {
         'Content-Type': 'application/json',
-        'user-agent': 'fontwer'
-      },
-      method: 'GET'
+        'user-agent': 'fontwr'
+      }
     };
 
-    https.request(options, (res) => {
+    https.get(options, (res) => {
       var body = [];
       if (res.statusCode === 200){
         res.on('data', (chunk) => {
@@ -92,9 +89,8 @@ module.exports = class FontRepository{
       else
         deferred.reject(new Error('HTTP Status Code: ' + res.statusCode));
     }).on('error', (error) => {
-      deferred.reject(new Error(error));
-    })
-    .end();
+      deferred.reject(error);
+    }).end();
 
     return deferred.promise;
   }
