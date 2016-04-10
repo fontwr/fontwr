@@ -49,6 +49,5 @@ module.exports = class FontFaceCreator{
         `font-weight: normal;\n` +
         `font-style: normal;\n`, ' ', 2) +
       `}\n`;
-    // console.log(this.output);
   }
 };
