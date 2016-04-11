@@ -14,8 +14,8 @@ function loadFixture(path){
   return deferred.promise;
 }
 
-describe('FontFaceCreator features', () => {
-  it('should convert only a ttf', () => {
+describe('FontFaceCreator rules', () => {
+  it('createFontFace(): Should generate only a ttf', () => {
     var fontFaceCreator = new FontFaceCreator();
     return loadFixture('test/fixture/FontFaceCreator/ttf.css').then((fontFace) => {
       fontFaceCreator.createFontFace('Roboto', ['.ttf']);
@@ -24,7 +24,7 @@ describe('FontFaceCreator features', () => {
       console.log(error);
     });
   });
-  it('should convert woff and ttf', () => {
+  it('createFontFace(): Should generate woff and ttf', () => {
     var fontFaceCreator = new FontFaceCreator();
     return loadFixture('test/fixture/FontFaceCreator/woffttf.css').then((fontFace) => {
       fontFaceCreator.createFontFace('Roboto', ['.ttf', '.woff']);
@@ -33,7 +33,7 @@ describe('FontFaceCreator features', () => {
       console.log(error);
     });
   });
-  it('should convert woff2, woff and ttf', () => {
+  it('createFontFace(): Should generate woff2, woff and ttf', () => {
     var fontFaceCreator = new FontFaceCreator();
     return loadFixture('test/fixture/FontFaceCreator/woff2woffttf.css').then((fontFace) => {
       fontFaceCreator.createFontFace('Roboto', ['.ttf', '.woff2', '.woff']);
@@ -42,7 +42,7 @@ describe('FontFaceCreator features', () => {
       console.log(error);
     });
   });
-  it('should convert eot, woff2, woff, ttf', () => {
+  it('createFontFace(): Should generate eot, woff2, woff, ttf', () => {
     var fontFaceCreator = new FontFaceCreator();
     return loadFixture('test/fixture/FontFaceCreator/eotwoff2woffttf.css').then((fontFace) => {
       fontFaceCreator.createFontFace('Roboto', ['.ttf', '.eot', '.woff2', '.woff']);
@@ -51,7 +51,7 @@ describe('FontFaceCreator features', () => {
       console.log(error);
     });
   });
-  it('should convert eot, ttf', () => {
+  it('createFontFace(): Should generate eot, ttf', () => {
     var fontFaceCreator = new FontFaceCreator();
     return loadFixture('test/fixture/FontFaceCreator/eotttf.css').then((fontFace) => {
       fontFaceCreator.createFontFace('Roboto', ['.eot', '.ttf']);
@@ -60,7 +60,7 @@ describe('FontFaceCreator features', () => {
       console.log(error);
     });
   });
-  it('should convert woff2, woff', () => {
+  it('createFontFace(): Should generate woff2, woff', () => {
     var fontFaceCreator = new FontFaceCreator();
     return loadFixture('test/fixture/FontFaceCreator/woff2woff.css').then((fontFace) => {
       fontFaceCreator.createFontFace('Roboto', ['.woff2', '.woff']);
@@ -69,7 +69,7 @@ describe('FontFaceCreator features', () => {
       console.log(error);
     });
   });
-  it('should convert woff2, woff, eot', () => {
+  it('createFontFace(): Should generate woff2, woff, eot', () => {
     var fontFaceCreator = new FontFaceCreator();
     return loadFixture('test/fixture/FontFaceCreator/woff2woffeot.css').then((fontFace) => {
       fontFaceCreator.createFontFace('Roboto', ['.woff2', '.woff', '.eot']);
