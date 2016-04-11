@@ -14,17 +14,18 @@ module.exports = class FontConverter{
     converter['.eot'] = ttf2eot;
 
     var deferred = q.defer();
-    fs.readFile('tmp/' + file + '.ttf', (err, data) => {
-      if (err)
-        deferred.reject(new Error(err));
-
-      var ttf = new Uint8Array(data);
-      var convertedFont = new Buffer(converter[extension](ttf).buffer);
-      fs.writeFile('tmp/' + file + extension, convertedFont, (err) => {
-        if (err)
-          deferred.reject(new Error(err));
-        deferred.resolve(file + extension);
-      });
+    fs.readFile('tmp/' + file + '.ttf', (error, data) => {
+      if (error)
+        deferred.reject(new Error(error));
+      else{
+        var ttf = new Uint8Array(data);
+        var convertedFont = new Buffer(converter[extension](ttf).buffer);
+        fs.writeFile('tmp/' + file + extension, convertedFont, (error) => {
+          if (error)
+            deferred.reject(new Error(error));
+          deferred.resolve(file + extension);
+        });
+      }
     });
     return deferred.promise;
   }
