@@ -46,9 +46,9 @@ describe('FontRepository rules', () => {
 
     sinon.stub(wget, 'download', () => {
       var eventEmitter = new EventEmitter();
-      setTimeout(() => {
+      setImmediate(() => {
         eventEmitter.emit('end');
-      }, 0);
+      });
       return eventEmitter;
     });
 

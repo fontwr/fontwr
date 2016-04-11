@@ -7,35 +7,11 @@ const chai = require('chai'),
   isWoff = require('is-woff'),
   chaiAsPromised = require('chai-as-promised'),
   readChunk = require('read-chunk'),
-  rimraf = require('rimraf'),
+  Util = require('../lib/util.js'),
   fs = require('fs');
 
 chai.use(chaiAsPromised);
-
-//todo: put this function inside a test helper class
-function loadFixture(path){
-  return new Promise((resolve, reject) => {
-    fs.readFile(path, (error, data) => {
-      if (error) reject(new Error(error));
-      resolve(data);
-    });
-  });
-}
-
-//todo: put this function inside a test helper class
-function createOrUseDirectory(directory, callback){
-    try{
-      fs.mkdirSync(directory);
-    }catch(error){
-      if (error.code === 'EEXIST'){
-        if (callback)
-          callback();
-      }else
-        throw error;
-    }
-  }
-
-createOrUseDirectory('tmp');
+Util.createOrUseDirectory('tmp');
 
 describe('FontConverter methods requirements', () => {
   var fontConverter = new FontConverter();
@@ -57,7 +33,7 @@ describe('FontConverter methods requirements', () => {
   });
 
   it('convert(): Should have a writeFile method', () => {
-    return loadFixture('test/fixture/FontConverter/Roboto-Regular.ttf').then((data) => {
+    return Util.loadFixture('test/fixture/FontConverter/Roboto-Regular.ttf').then((data) => {
       var writeFileSpy = sandbox.spy(fs, 'writeFile');
       sandbox.stub(fs, 'readFile').yields(null, data);
 
@@ -74,7 +50,7 @@ describe('FontConverter rules', () => {
   var sandbox;
 
   beforeEach(() => {
-    rimraf.sync('tmp/*');
+    Util.cleanDirectory('tmp');
     sandbox = sinon.sandbox.create();
   });
 
@@ -83,7 +59,7 @@ describe('FontConverter rules', () => {
   });
 
   it('convert(): Should convert to .eot', () => {
-    return loadFixture('test/fixture/FontConverter/Roboto-Regular.ttf').then((data) => {
+    return Util.loadFixture('test/fixture/FontConverter/Roboto-Regular.ttf').then((data) => {
       sandbox.stub(fs, 'readFile').yields(null, data);
       return fontConverter.convert('Roboto-Regular', '.eot').then(() => {
         let buffer = readChunk.sync('tmp/Roboto-Regular.eot', 0, 36);
@@ -94,21 +70,8 @@ describe('FontConverter rules', () => {
     });
   });
 
-  it('convert(): Should get error when reading file', () => {
-    sandbox.stub(fs, 'readFile').yields(new Error());
-    return assert.isRejected(fontConverter.convert('Roboto-Regular', '.eot'));
-  });
-
-  it('convert(): Should get error when writing to file', () => {
-    return loadFixture('test/fixture/FontConverter/Roboto-Regular.ttf').then((data) => {
-      sandbox.stub(fs, 'readFile').yields(null, data);
-      sandbox.stub(fs, 'writeFile').yields(new Error());
-      return assert.isRejected(fontConverter.convert('Roboto-Regular', '.eot'));
-    });
-  });
-
   it('convert(): Should convert to .woff', () => {
-    return loadFixture('test/fixture/FontConverter/Roboto-Regular.ttf').then((data) => {
+    return Util.loadFixture('test/fixture/FontConverter/Roboto-Regular.ttf').then((data) => {
       sandbox.stub(fs, 'readFile').yields(null, data);
       return fontConverter.convert('Roboto-Regular', '.woff').then(() => {
         let buffer = readChunk.sync('tmp/Roboto-Regular.woff', 0, 8);
@@ -123,5 +86,19 @@ describe('FontConverter rules', () => {
   // not done due: https://github.com/raphaklaus/fontwr/issues/13
   // it('convert(): Should convert to .woff2', () => {
   // });
+
+  it('convert(): Should get error when reading file', () => {
+    sandbox.stub(fs, 'readFile').yields(new Error());
+    return assert.isRejected(fontConverter.convert('Roboto-Regular', '.eot'));
+  });
+
+  it('convert(): Should get error when writing to file', () => {
+    return Util.loadFixture('test/fixture/FontConverter/Roboto-Regular.ttf').then((data) => {
+      sandbox.stub(fs, 'readFile').yields(null, data);
+      sandbox.stub(fs, 'writeFile').yields(new Error());
+      return assert.isRejected(fontConverter.convert('Roboto-Regular', '.eot'));
+    });
+  });
+
 });
 

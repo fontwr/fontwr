@@ -4,7 +4,6 @@
 const q = require('q'),
   inquirer = require('inquirer'),
   fs = require('fs'),
-  rimraf = require('rimraf'),
   FontRepository = require('./FontRepository'),
   FontConverter = require('./FontConverter'),
   FontFaceCreator = require('./FontFaceCreator'),
@@ -12,27 +11,10 @@ const q = require('q'),
   pkg = require('../package.json'),
   checkUpdate = require('check-update'),
   colors = require('colors'),
+  Util = require('../lib/util.js'),
   spinner = require('cli-spinner').Spinner;
 
 class CLI{
-  static createOrUseDirectory(directory, callback){
-    try{
-      fs.mkdirSync(directory);
-    }catch(error){
-      if (error.code === 'EEXIST'){
-        if (callback)
-          callback();
-      }else
-        throw error;
-    }
-  }
-
-  static cleanDirectory(directory){
-    this.createOrUseDirectory(directory, () => {
-      rimraf.sync(directory + '/*');
-    });
-  }
-
   static filter(fonts){
     var filteredFonts = [];
     fonts.forEach((font) =>{
@@ -169,7 +151,7 @@ class CLI{
     });
 
     q.allSettled(this.conversionQueue).then((filesNamesWithExtension) => {
-      this.createOrUseDirectory('fonts');
+      Util.createOrUseDirectory('fonts');
 
       filesNamesWithExtension.forEach((fileNameAndExtension) => {
         fs.createReadStream('tmp/' + fileNameAndExtension.value)
@@ -184,7 +166,7 @@ class CLI{
 
   static createFontFaceFile(answers, filesNames){
     const fontFaceCreator = new FontFaceCreator();
-    this.createOrUseDirectory('css');
+    Util.createOrUseDirectory('css');
 
     filesNames.forEach((fileName) => {
       fontFaceCreator.createFontFace(fileName.value, answers.slice());
@@ -246,7 +228,8 @@ class CLI{
       this.fontFamily = yargs.argv._[1].toString();
       this.global = yargs.argv.g;
 
-      this.cleanDirectory('tmp');
+      Util.createOrUseDirectory('tmp');
+      Util.cleanDirectory('tmp');
       this.chooseFonts();
     }
   }
