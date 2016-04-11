@@ -22,6 +22,21 @@ function loadFixture(path){
   });
 }
 
+//todo: put this function inside a test helper class
+function createOrUseDirectory(directory, callback){
+    try{
+      fs.mkdirSync(directory);
+    }catch(error){
+      if (error.code === 'EEXIST'){
+        if (callback)
+          callback();
+      }else
+        throw error;
+    }
+  }
+
+createOrUseDirectory('tmp');
+
 describe('FontConverter methods requirements', () => {
   var fontConverter = new FontConverter();
   var sandbox;
