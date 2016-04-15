@@ -106,7 +106,8 @@ describe('FontRepository rules', () => {
     return fontRepository.verify().then(() => {
       throw new Error('Expected to be a 404');
     }, function(error){
-      assert.equal(error.message, new Error('Font not found. Try running the command: fontwr list').message);
+      assert.equal(error.message, new Error('Font not found. ' +
+        'Try running the command: fontwr list').message);
     });
   });
 
@@ -121,7 +122,8 @@ describe('FontRepository rules', () => {
     return fontRepository.verify().then(() => {
       throw new Error('Expected to be a 403');
     }, function(error){
-      assert.equal(error.message, new Error('HTTP Status Code: ' + statusCode).message);
+      assert.equal(error.message,
+        new Error('HTTP Status Code: ' + statusCode).message);
     });
   });
 
@@ -164,7 +166,9 @@ describe('FontRepository rules', () => {
     return fontRepository.list().then(() => {
       throw new Error('Expected to be a 404');
     }, function(error){
-      assert.equal(error.message, new Error('Something were wrong. Repository not found: ' + fontRepository.baseAPIPath + fontRepository.repositoryPath).message);
+      assert.equal(error.message, new Error('Something were wrong. ' +
+      'Repository not found: ' + fontRepository.baseAPIPath +
+      fontRepository.repositoryPath).message);
     });
   });
 
@@ -178,7 +182,8 @@ describe('FontRepository rules', () => {
     return fontRepository.list().then(() => {
       throw new Error('Expected to be a 403');
     }, function(error){
-      assert.equal(error.message, new Error('HTTP Status Code: ' + statusCode).message);
+      assert.equal(error.message,
+        new Error('HTTP Status Code: ' + statusCode).message);
     });
   });
 
