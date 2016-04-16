@@ -17,7 +17,7 @@ module.exports = class FontConverter{
     fs.readFile('tmp/' + file + '.ttf', (error, data) => {
       if (error)
         deferred.reject(error);
-      else{
+      else {
         var ttf = new Uint8Array(data);
         var convertedFont = new Buffer(converter[extension](ttf).buffer);
         fs.writeFile('tmp/' + file + extension, convertedFont, (error) => {
