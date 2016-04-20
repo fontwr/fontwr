@@ -11,7 +11,7 @@ const q = require('q'),
   checkUpdate = require('check-update'),
   colors = require('colors'),
   winston = require('winston'),
-  Util = require('../lib/util.js'),
+  Util = require('../lib/Util.js'),
   Spinner = require('cli-spinner').Spinner;
 
 class CLI{

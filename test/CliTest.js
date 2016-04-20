@@ -1,7 +1,7 @@
 'use strict';
 
 const CLI = require('../src/CLI.js'),
-  Util = require('../lib/util.js'),
+  Util = require('../lib/Util.js'),
   inquirer = require('inquirer'),
   chai = require('chai'),
   assert = chai.assert,
