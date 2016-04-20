@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 'use strict';
 
 const q = require('q'),
@@ -11,8 +10,9 @@ const q = require('q'),
   pkg = require('../package.json'),
   checkUpdate = require('check-update'),
   colors = require('colors'),
+  winston = require('winston'),
   Util = require('../lib/util.js'),
-  spinner = require('cli-spinner').Spinner;
+  Spinner = require('cli-spinner').Spinner;
 
 class CLI{
   static filter(fonts){
@@ -25,13 +25,12 @@ class CLI{
   }
 
   static listAllFonts(){
-    const fontRepository = new FontRepository(this.fontFamily);
-    fontRepository.list().then((list) => {
+    this.fontRepository.list().then((list) => {
       list.forEach((element) => {
-        console.log('- ' + element);
+        CLI.logger.log('verbose', '- ' + element);
       });
     }, (error) => {
-      console.log(error.message.error);
+      CLI.logger.log('verbose', error.message.error);
     });
   }
 
@@ -41,14 +40,14 @@ class CLI{
       var registryName = fileName.value + ' (TrueType)';
       regedit.putValue({
         'HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts': {
-            [registryName]: {
-                value: fileName.value + '.ttf',
-                type: 'REG_SZ'
-            }
-       }
+          [registryName]: {
+            value: fileName.value + '.ttf',
+            type: 'REG_SZ'
+          }
+        }
       }, (error) => {
         if (error)
-          console.log(error);
+          CLI.logger.log('verbose', error);
       });
     });
   }
@@ -65,174 +64,249 @@ class CLI{
       confirm: true
     }, (error) => {
       if (error)
-        console.log(error);
+        CLI.logger.log('verbose', error);
       else if (process.platform === 'win32')
-        this.registerFonts(filesNames);
+        CLI.registerFonts(filesNames);
 
-      console.log('√ Fonts copied to system\'s fonts directory.'.green);
+      CLI.logger.log('verbose',
+        '√ Fonts copied to system\'s fonts directory.'.green);
     });
   }
 
   static chooseFonts(){
-    const fontRepository = new FontRepository();
-    fontRepository.setFontName(this.fontFamily);
-
-    fontRepository.verify().then((data) => {
-      inquirer.prompt([{
-        type: 'checkbox',
-        pageSize: 10,
-        message: 'Choose the Font Family:',
-        name: 'fontFamilies',
-        choices: CLI.filter(data),
-        validate: function(answers){
-          if (answers.length === 0)
-            return 'You must choose at least 1 font.';
-          return true;
-        }
-      }], (answers) => {
-        CLI.downloadQueue = [];
-        answers.fontFamilies.forEach((fontFamily) => {
-          this.downloadQueue.push(fontRepository.download(fontFamily));
-        });
-        this.downloadFonts();
-      }, (error) => {
-        console.log(error.message);
-      });
-    }, (error) =>{
-      console.log(error.message);
-    });
-  }
-
-  static downloadFonts(){
-    var downloadSpinner = new spinner('Downloading.. %s');
-    downloadSpinner.setSpinnerString('|/-\\');
-    downloadSpinner.start();
-
-    q.allSettled(this.downloadQueue).then((filesNames) => {
-      downloadSpinner.stop(true);
-      if (this.global){
-        this.copyToSystemFontDirectory(filesNames);
-      }else{
-        inquirer.prompt([{
+    return new Promise((resolve, reject) => {
+      return CLI.fontRepository.verify().then((data) => {
+        return inquirer.prompt([{
           type: 'checkbox',
           pageSize: 10,
-          message: 'Select which formats you want inside the font-face:',
-          name: 'fontExtensions',
-          choices: [{name: '.woff2'}, {name: '.woff'},
-            {name: '.eot'}, {name: '.ttf'}],
-          validate: function(answers){
+          message: 'Choose the Font Family:',
+          name: 'fontFamilies',
+          choices: CLI.filter(data),
+          validate: (answers) => {
             if (answers.length === 0)
-              return 'You must choose at least 1 format.';
+              return 'You must choose at least 1 font.';
             return true;
           }
         }], (answers) => {
-          this.convertFonts(answers, filesNames);
+          resolve(answers);
         });
-      }
-    }, (error) => {
-      console.log(error.message);
-    });
-  }
-
-  static convertFonts(answers, filesNames){
-    const fontConverter = new FontConverter();
-    this.conversionQueue = [];
-
-    // todo: use spinner here too
-    console.log('Converting...');
-
-    answers.fontExtensions.forEach((fontFormat) => {
-      if (fontFormat === '.ttf')
-        return;
-
-      filesNames.forEach((fileName) => {
-        this.conversionQueue.push(fontConverter.convert(fileName.value, fontFormat));
+      })
+      .catch((error) => {
+        reject(error);
       });
     });
+  }
 
-    q.allSettled(this.conversionQueue).then((filesNamesWithExtension) => {
-      Util.createOrUseDirectory('fonts');
-
-      filesNamesWithExtension.forEach((fileNameAndExtension) => {
-        fs.createReadStream('tmp/' + fileNameAndExtension.value)
-          .pipe(fs.createWriteStream('fonts/' + fileNameAndExtension.value));
+  static downloadFonts(fonts){
+    return new Promise((resolve, reject) => {
+      var downloadQueue = [];
+      fonts.fontFamilies.forEach((fontFamily) => {
+        downloadQueue.push(CLI.fontRepository.download(fontFamily));
       });
 
-      this.createFontFaceFile(answers.fontExtensions, filesNames);
-    }, (error) => {
-      console.log(error);
+      var downloadSpinner = new Spinner('Downloading.. %s');
+      downloadSpinner.setSpinnerString('|/-\\');
+      downloadSpinner.start();
+
+      return Promise.all(downloadQueue).then((filesNames) => {
+        downloadSpinner.stop(true);
+        resolve(filesNames);
+      }, (error) => {
+        reject(error);
+      });
     });
   }
 
-  static createFontFaceFile(answers, filesNames){
-    const fontFaceCreator = new FontFaceCreator();
-    Util.createOrUseDirectory('css');
+  static convertFonts(filesNames){
+    return new Promise((resolve, reject) => {
+      return inquirer.prompt([{
+        type: 'checkbox',
+        pageSize: 10,
+        message: 'Select which formats you want inside the font-face:',
+        name: 'extensions',
+        choices: [{name: '.woff2'}, {name: '.woff'},
+        {name: '.eot'}, {name: '.ttf'}],
+        validate: function(answers){
+          if (answers.length === 0)
+            return 'You must choose at least 1 format.';
+          return true;
+        }
+      }], (answers) => {
+        var conversionQueue = [];
 
-    filesNames.forEach((fileName) => {
-      fontFaceCreator.createFontFace(fileName.value, answers.slice());
-    });
+        // todo: use spinner here too
+        CLI.logger.log('verbose', 'Converting...');
 
-    fs.stat('css/fonts.css', (error, stat) => {
-      if (stat){
-        inquirer.prompt([{
-          type: 'confirm',
-          pageSize: 10,
-          message: 'css/fonts.css already exists. Overwrite?',
-          name: 'overwrite'
-        }], (answer) => {
-          if (answer.overwrite)
-            fs.writeFile('css/fonts.css', fontFaceCreator.output, (error) => {
-              if (error) throw error;
+        answers.extensions.forEach((fontFormat) => {
+          if (fontFormat === '.ttf')
+            return;
 
-              console.log('√ Fonts placed in /fonts and font face overwritten in /css.'.green);
-            });
+          filesNames.forEach((fileName) => {
+            conversionQueue
+              .push(CLI.fontConverter.convert(fileName, fontFormat));
+          });
         });
-      }else
-        fs.writeFile('css/fonts.css', fontFaceCreator.output, (error) => {
-          if (error) throw error;
 
-          console.log('√ Fonts placed in /fonts and font face in /css.'.green);
+        q.allSettled(conversionQueue).then((filesNamesWithExtension) => {
+          Util.createOrUseDirectory('fonts');
+
+          filesNamesWithExtension.forEach((fileNameAndExtension) => {
+            fs.createReadStream('tmp/' + fileNameAndExtension.value)
+            .pipe(fs.createWriteStream('fonts/'
+              + fileNameAndExtension.value));
+          });
+
+          var result = {
+            filesNames: filesNames,
+            fontExtensions: answers.extensions
+          };
+
+          resolve(result);
+          // this.createFontFaceFile(answers.fontExtensions, filesNames);
+        }, (error) => {
+          reject(error);
         });
+        // var result = {
+        //   fontExtensions: answers.extensions,
+        //   filesNames: filesNames
+        // };
+        //
+        // resolve(result);
+        // this.convertFonts(answers, filesNames);
+      });
     });
   }
 
-  static execute(){
-    checkUpdate({packageName: pkg.name, packageVersion: pkg.version, isCLI: true}, (error, latestVersion, defaultMessage) => {
-      if (!error)
-        console.log(defaultMessage);
+  static createFontFaceFile(fontsInfo){
+    return new Promise((resolve, reject) => {
+      Util.createOrUseDirectory('css');
+
+      fontsInfo.filesNames.forEach((fileName) => {
+        CLI.fontFaceCreator.createFontFace(fileName,
+          fontsInfo.fontExtensions.slice());
+      });
+
+      fs.stat('css/fonts.css', (error, stat) => {
+        if (stat){
+          inquirer.prompt([{
+            type: 'confirm',
+            pageSize: 10,
+            message: 'css/fonts.css already exists. Overwrite?',
+            name: 'overwrite'
+          }], (answer) => {
+            if (answer.overwrite)
+              fs.writeFile('css/fonts.css', CLI.fontFaceCreator.output,
+              (error) => {
+                if (error)
+                  reject(error);
+                else {
+                  resolve();
+                  CLI.logger.log('verbose', '√ Fonts placed '.green +
+                  'in /fonts and font face overwritten in /css.'.green);
+                }
+              });
+          });
+        } else
+        fs.writeFile('css/fonts.css', CLI.fontFaceCreator.output, (error) => {
+          if (error)
+            reject(error);
+          else {
+            resolve();
+            CLI.logger.log('verbose',
+              '√ Fonts placed in /fonts and font face in /css.'.green);
+          }
+        });
+      });
+    });
+  }
+
+  static useExternalArguments(args, external){
+    args.command = external.command;
+    args.fontName = external.fontName;
+    args.global = external.global;
+  }
+
+  static useYargs(args, yargs){
+    args.command = yargs.argv._[0];
+    args.fontName = yargs.argv._[1];
+    args.global = yargs.argv.g;
+  }
+
+  static execute(externalArguments){
+    var args = {};
+    var yargs = {};
+
+    this.logger = new winston.Logger({
+      transports: [
+        new winston.transports.Console({
+          handleExceptions: true,
+          showLevel: false
+        })
+      ],
+      exitOnError: false
     });
 
-    var yargs = require('yargs')
-      .usage('fontwr <command> [options]')
-      .demand(1)
-      .help('h')
-      .command('list', 'List all availables fonts')
-      .command('get', 'List all availables fonts')
-      .example('fontwr get opensans', 'Get Open Sans font')
-      .example('fontwr roboto -g', 'Get Roboto and install into system\'s font directory')
-      .describe('h', 'Show this help')
-      .describe('g', 'Download font to the system\'s font directory')
-      .alias('h', 'help');
+    this.fontRepository = new FontRepository();
+    this.fontConverter = new FontConverter();
+    this.fontFaceCreator = new FontFaceCreator();
 
-    var command = yargs.argv._[0];
+    checkUpdate({packageName: pkg.name,
+      packageVersion: pkg.version,
+      isCLI: true},
+      (error, latestVersion, defaultMessage) => {
+        if (!error)
+          CLI.logger.log('verbose', defaultMessage);
+      });
 
-    if (command === 'list')
-      this.listAllFonts();
-    else if (command === 'get'){
-      yargs.reset()
-      .demand(2)
-      .example('fontwr get opensans', 'Get Open Sans font')
-      .example('fontwr get roboto -g', 'Get Roboto and install into system\'s font directory')
-      .argv;
+    if (externalArguments)
+      CLI.useExternalArguments(args, externalArguments);
+    else {
+      yargs = require('yargs')
+        .usage('fontwr <command> [options]')
+        .demand(1)
+        .help('h')
+        .command('list', 'List all availables fonts')
+        .command('get', 'List all availables fonts')
+        .example('fontwr get opensans', 'Get Open Sans font')
+        .example('fontwr roboto -g', 'Get Roboto and' +
+        'install into system\'s font directory')
+        .describe('h', 'Show this help')
+        .describe('g', 'Download font to the system\'s font directory')
+        .alias('h', 'help');
 
-      this.fontFamily = yargs.argv._[1].toString();
-      this.global = yargs.argv.g;
+      this.logger.level = 'verbose';
+      CLI.useYargs(args, yargs);
+    }
+
+    if (args.command === 'list')
+      CLI.listAllFonts();
+    else if (args.command === 'get'){
+      if (!externalArguments)
+        yargs.reset()
+          .demand(2)
+          .example('fontwr get opensans', 'Get Open Sans font')
+          .example('fontwr get roboto -g',
+          'Get Roboto and install into system\'s font directory')
+          .argv;
+
+      this.fontRepository.fontName = args.fontName;
+      this.global = args.global;
 
       Util.createOrUseDirectory('tmp');
       Util.cleanDirectory('tmp');
-      this.chooseFonts();
+
+      if (this.global){
+        return this.chooseFonts()
+          .then(this.downloadFonts)
+          .then(this.copyToSystemFontDirectory);
+      } else {
+        return this.chooseFonts()
+          .then(this.downloadFonts)
+          .then(this.convertFonts)
+          .then(this.createFontFaceFile);
+      }
     }
   }
 }
 
-CLI.execute();
+module.exports = CLI;
