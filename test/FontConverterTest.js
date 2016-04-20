@@ -7,7 +7,7 @@ const chai = require('chai'),
   isWoff = require('is-woff'),
   chaiAsPromised = require('chai-as-promised'),
   readChunk = require('read-chunk'),
-  Util = require('../lib/util.js'),
+  Util = require('../lib/Util.js'),
   fs = require('fs');
 
 chai.use(chaiAsPromised);
