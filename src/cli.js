@@ -160,19 +160,10 @@ class CLI{
             filesNames: filesNames,
             fontExtensions: answers.extensions
           };
-
           resolve(result);
-          // this.createFontFaceFile(answers.fontExtensions, filesNames);
         }, (error) => {
           reject(error);
         });
-        // var result = {
-        //   fontExtensions: answers.extensions,
-        //   filesNames: filesNames
-        // };
-        //
-        // resolve(result);
-        // this.convertFonts(answers, filesNames);
       });
     });
   }
