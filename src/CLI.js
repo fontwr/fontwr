@@ -1,7 +1,6 @@
 'use strict';
 
-const q = require('q'),
-  inquirer = require('inquirer'),
+const inquirer = require('inquirer'),
   fs = require('fs'),
   FontRepository = require('./FontRepository'),
   FontConverter = require('./FontConverter'),
@@ -147,13 +146,13 @@ class CLI{
           });
         });
 
-        q.allSettled(conversionQueue).then((filesNamesWithExtension) => {
+        Promise.all(conversionQueue).then((filesNamesWithExtension) => {
           Util.createOrUseDirectory('fonts');
 
           filesNamesWithExtension.forEach((fileNameAndExtension) => {
-            fs.createReadStream('tmp/' + fileNameAndExtension.value)
+            fs.createReadStream('tmp/' + fileNameAndExtension)
             .pipe(fs.createWriteStream('fonts/'
-              + fileNameAndExtension.value));
+              + fileNameAndExtension));
           });
 
           var result = {

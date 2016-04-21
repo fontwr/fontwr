@@ -1,7 +1,6 @@
 'use strict';
 
 const _ = require('underscore');
-const q = require('q');
 const wget = require('wget');
 const https = require('follow-redirects').https;
 
@@ -23,81 +22,79 @@ module.exports = class FontRepository{
   }
 
   verify(){
-    var deferred = q.defer();
-    var options = {
-      host: this.baseAPIPath,
-      path: this.repositoryPath + this._fontName,
-      headers: {
-        'Content-Type': 'application/json',
-        'user-agent': 'fontwr'
-      }
-    };
+    return new Promise((resolve, reject) => {
+      var options = {
+        host: this.baseAPIPath,
+        path: this.repositoryPath + this._fontName,
+        headers: {
+          'Content-Type': 'application/json',
+          'user-agent': 'fontwr'
+        }
+      };
 
-    https.get(options, (res) => {
-      var body = [];
-      if (res.statusCode === 200){
-        res.on('data', (chunk) => {
-          body += chunk;
-        });
+      https.get(options, (res) => {
+        var body = [];
+        if (res.statusCode === 200){
+          res.on('data', (chunk) => {
+            body += chunk;
+          });
 
-        res.on('end', () => {
-          deferred.resolve(JSON.parse(body));
-        });
-      } else if (res.statusCode === 404)
-        deferred.reject(new Error('Font not found. Try running the command:'+
-          ' fontwr list'));
-      else
-        deferred.reject(new Error('HTTP Status Code: ' + res.statusCode));
-    }).on('error', (e) => {
-      deferred.reject(e);
-    }).end();
-
-    return deferred.promise;
+          res.on('end', () => {
+            resolve(JSON.parse(body));
+          });
+        } else if (res.statusCode === 404)
+          reject(new Error('Font not found. Try running the command:'+
+            ' fontwr list'));
+        else
+          reject(new Error('HTTP Status Code: ' + res.statusCode));
+      }).on('error', (e) => {
+        reject(e);
+      }).end();
+    });
   }
 
   download(fileName){
-    var deferred = q.defer();
-    wget.download(this.baseRawPath + this._fontName + '/' + fileName + '.ttf',
+    return new Promise((resolve, reject) => {
+      wget.download(this.baseRawPath + this._fontName + '/' + fileName + '.ttf',
       this.output + fileName + '.ttf')
-        .on('error', (error) => {
-          deferred.reject(new Error(error));
-        })
-        .on('end', () => {
-          deferred.resolve(fileName);
-        });
-    return deferred.promise;
+      .on('error', (error) => {
+        reject(new Error(error));
+      })
+      .on('end', () => {
+        resolve(fileName);
+      });
+    });
   }
 
   list(){
-    var deferred = q.defer();
-    var options = {
-      host: this.baseAPIPath,
-      path: this.repositoryPath,
-      headers: {
-        'Content-Type': 'application/json',
-        'user-agent': 'fontwr'
-      }
-    };
+    return new Promise((resolve, reject) => {
+      var options = {
+        host: this.baseAPIPath,
+        path: this.repositoryPath,
+        headers: {
+          'Content-Type': 'application/json',
+          'user-agent': 'fontwr'
+        }
+      };
 
-    https.get(options, (res) => {
-      var body = [];
-      if (res.statusCode === 200){
-        res.on('data', (chunk) => {
-          body += chunk;
-        });
+      https.get(options, (res) => {
+        var body = [];
+        if (res.statusCode === 200){
+          res.on('data', (chunk) => {
+            body += chunk;
+          });
 
-        res.on('end', () => {
-          deferred.resolve(_.pluck(JSON.parse(body), 'name'));
-        });
-      } else if (res.statusCode === 404)
-        deferred.reject(new Error('Something were wrong. ' +
+          res.on('end', () => {
+            resolve(_.pluck(JSON.parse(body), 'name'));
+          });
+        } else if (res.statusCode === 404)
+          reject(new Error('Something were wrong. ' +
         'Repository not found: ' + this.baseAPIPath + this.repositoryPath));
-      else
-        deferred.reject(new Error('HTTP Status Code: ' + res.statusCode));
-    }).on('error', (error) => {
-      deferred.reject(error);
-    }).end();
-
-    return deferred.promise;
+        else
+          reject(new Error('HTTP Status Code: ' + res.statusCode));
+      }).on('error', (error) => {
+        reject(error);
+      }).end();
+    });
   }
 };

@@ -56,7 +56,7 @@ describe('FontRepository rules', () => {
       assert.equal(fontRepository.fontName, data);
     }, () => {
       throw new Error('Expected to be a 200');
-    }).fin(() => {
+    }).then(() => {
       wget.download.restore();
     });
   });
@@ -74,7 +74,7 @@ describe('FontRepository rules', () => {
       throw new Error('Expected to be an error');
     }, () => {
       assert(true);
-    }).fin(() => {
+    }).then(() => {
       wget.download.restore();
     });
   });

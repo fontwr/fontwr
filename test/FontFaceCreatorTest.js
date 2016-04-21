@@ -1,4 +1,5 @@
 'use strict';
+
 var chai = require('chai'),
   Util = require('../lib/Util.js'),
   FontFaceCreator = require('../src/FontFaceCreator.js'),
