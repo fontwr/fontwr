@@ -14,15 +14,19 @@ module.exports = class FontRepository{
     this.output = 'tmp/';
   }
 
-  setFontName(fontName){
-    this.fontName = fontName.toLowerCase();
+  set fontName(value){
+    this._fontName = value.toLowerCase();
+  }
+
+  get fontName(){
+    return this._fontName;
   }
 
   verify(){
     var deferred = q.defer();
     var options = {
       host: this.baseAPIPath,
-      path: this.repositoryPath + this.fontName,
+      path: this.repositoryPath + this._fontName,
       headers: {
         'Content-Type': 'application/json',
         'user-agent': 'fontwr'
@@ -30,7 +34,6 @@ module.exports = class FontRepository{
     };
 
     https.get(options, (res) => {
-      // console.log('font name: ' + this.fontName);
       var body = [];
       if (res.statusCode === 200){
         res.on('data', (chunk) => {
@@ -54,7 +57,7 @@ module.exports = class FontRepository{
 
   download(fileName){
     var deferred = q.defer();
-    wget.download(this.baseRawPath + this.fontName + '/' + fileName + '.ttf',
+    wget.download(this.baseRawPath + this._fontName + '/' + fileName + '.ttf',
       this.output + fileName + '.ttf')
         .on('error', (error) => {
           deferred.reject(new Error(error));
