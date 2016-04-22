@@ -14,6 +14,7 @@
     "follow-redirects": "0.0.7",
     "indent-string": "^2.1.0",
     "inquirer": "^0.12.0",
+    "json-file-plus": "^3.3.0",
     "rimraf": "^2.5.2",
     "ttf2eot": "^2.0.0",
     "ttf2woff": "^2.0.1",
