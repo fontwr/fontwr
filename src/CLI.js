@@ -223,6 +223,13 @@ class CLI{
     args.global = yargs.argv.g;
   }
 
+  static handleErrors(error){
+    if (error instanceof Error)
+      CLI.logger.log('verbose', error.message);
+    else
+      CLI.logger.log('verbose', error);
+  }
+
   static setup(){
     this.fontRepository = new FontRepository();
     this.fontConverter = new FontConverter();
@@ -293,12 +300,14 @@ class CLI{
       if (this.global)
         return this.chooseFonts()
           .then(this.downloadFonts)
-          .then(this.copyToSystemFontDirectory);
+          .then(this.copyToSystemFontDirectory)
+          .catch(this.handleErrors);
       else
         return this.chooseFonts()
           .then(this.downloadFonts)
           .then(this.convertFonts)
-          .then(this.createFontFaceFile);
+          .then(this.createFontFaceFile)
+          .catch(this.handleErrors);
     }
   }
 }
