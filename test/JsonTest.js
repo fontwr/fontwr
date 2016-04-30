@@ -4,6 +4,7 @@ const chai = require('chai'),
   assert = chai.assert,
   sinon = require('sinon'),
   Json = require('../lib/Json.js'),
+  Util = require('../lib/Util.js'),
   fs = require('fs');
 
 describe('Json methods requirements',()=>{
@@ -77,17 +78,17 @@ describe('Json rules',()=>{
 
   it('addFont(): Should add Roboto-Light font', ()=> {
     var addedFont = Json.addFont('Roboto-Light',this.roboto['Roboto-Light']);
-    assert.equal(addedFont,this.roboto['Roboto-Light']);
+    assert.equal(addedFont,true);
   });
 
   it('addSystemFont(): Should add Verdana-Regular font', ()=> {
     var addedFont = Json.addSystemFont('Verdana-Regular',this.verdana['Verdana-Regular']);
-    assert.equal(addedFont,this.verdana['Verdana-Regular']);
+    assert.equal(addedFont,true);
   });
 
   it('changeOutput(): Should change fonts output', ()=> {
     var output = Json.changeOutput(this.output['output']);
-    assert.equal(output,this.output['output']);
+    assert.equal(output,true);
   });
 
   it('getFontByName(): Should return the Roboto-Regular font', ()=> {
@@ -100,14 +101,14 @@ describe('Json rules',()=>{
     assert.deepEqual(fonts,this.roboto);
   });
 
-  it('removeFont(): Should remove the Roboto-Light font and return -1', ()=> {
+  it('removeFont(): Should remove the Roboto-Light font', ()=> {
     var result = Json.removeFont('Roboto-Light');
-    assert.equal(result,'-1');
+    assert.equal(result,true);
   });
 
-  it('removeSystemFont(): Should remove the Verdana-Regular font and return -1', ()=> {
+  it('removeSystemFont(): Should remove the Verdana-Regular font', ()=> {
     var result = Json.removeSystemFont('Verdana-Regular');
-    assert.equal(result,'-1');
+    assert.equal(result,true);
   });
 
   it('get(): Should get a property', ()=> {
