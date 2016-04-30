@@ -1,24 +1,28 @@
 {
-  "fonts": {
-    "Roboto-Regular": {
-      "family": "roboto",
-      "format": [".woff2", ".woff", ".eot"]
-    },
-    "OpenSans-Light": {
-      "family": "opensans",
-      "format": [".woff2", ".woff"]
-    }
-  },
-  "systemFonts":{
-    "Nexa-Light": {
-      "format": [".woff2"]
-    },
-    "Comic Sans MS": {
-      "format": [".woff2"]
-    }
-  },
-  "output": {
-    "fonts": "fonts/",
-    "fontface": "css/"
-  }
+	"fonts": {
+		"Roboto-Regular": {
+			"family": "roboto",
+			"format": [
+				".woff2",
+				".woff",
+				".eot"
+			]
+		}
+	},
+	"systemFonts": {
+		"Nexa-Light": {
+			"format": [
+				".woff2"
+			]
+		},
+		"Verdana-Regular": {
+			"format": [
+				".woff"
+			]
+		}
+	},
+	"output": {
+		"fonts": "fonts/",
+		"fontface": "css/"
+	}
 }
