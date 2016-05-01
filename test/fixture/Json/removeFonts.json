@@ -1,0 +1,22 @@
+{
+	"fonts": {
+    "Opensans-Regular": {
+			"family": "opensans",
+			"format": [
+				".woff2",
+				".woff"
+			]
+		}
+	},
+	"systemFonts": {
+		"Nexa-Light": {
+			"format": [
+				".woff2"
+			]
+		}
+	},
+	"output": {
+		"fonts": "fonts/",
+		"fontface": "css/"
+	}
+}

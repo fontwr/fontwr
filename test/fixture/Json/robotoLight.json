@@ -1,0 +1,34 @@
+{
+	"fonts": {
+		"Roboto-Black": {
+			"family": "roboto",
+			"format": [
+				".woff2",
+				".woff",
+				".eot"
+			]
+		},
+		"Roboto-Regular": {
+			"family": "roboto",
+			"format": [
+				".woff2",
+				".woff",
+				".eot"
+			]
+		},
+    "Roboto-Light": {
+			"family": "roboto",
+			"format": [
+				".woff2",
+				".woff"
+			]
+		}
+	},
+	"systemFonts": {
+		"Nexa-Light": {
+			"format": [
+				".woff2"
+			]
+		}
+	}
+}
