@@ -1,6 +1,6 @@
 {
 	"fonts": {
-		"Roboto-Regular": {
+		"Roboto-Black": {
 			"family": "roboto",
 			"format": [
 				".woff2",
@@ -15,9 +15,5 @@
 				".woff2"
 			]
 		}
-	},
-	"output": {
-		"fonts": "fonts/",
-		"fontface": "css/"
 	}
 }

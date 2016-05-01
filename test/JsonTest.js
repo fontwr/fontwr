@@ -8,6 +8,7 @@ const chai = require('chai'),
   fs = require('fs');
 
 describe('Json methods requirements',()=>{
+  var json = new Json();
   var sandbox;
 
   beforeEach(() => {
@@ -21,32 +22,28 @@ describe('Json methods requirements',()=>{
   it('readFile(): Should have a readFileSync method', () => {
     var readFileSpy = sandbox.spy(fs, 'readFileSync');
 
-    Json.readFile();
+    json.readFile();
     sinon.assert.calledOnce(readFileSpy);
   });
 
   it('save(): Should have a createWriteStream method', () => {
     var writeFileSpy = sandbox.spy(fs,'createWriteStream');
-    var obj = {
-      'fonts': {
-        'Roboto-Regular': {
-          'family': 'roboto',
-          'format': ['.woff2', '.woff', '.eot']
-        }
-      },
-      'systemFonts': {
-        'Nexa-Light': {
-          'format': ['.woff2']
-        }
-      }
-    };
-
-    Json.save(JSON.stringify(obj,null,'\t'));
+    json.addFont('Roboto-Regular', {
+      'family': 'roboto',
+      'format': [
+        '.woff2',
+        '.woff',
+        '.eot'
+      ]
+    });
+    json.save();
     sinon.assert.calledOnce(writeFileSpy);
   });
 });
 
 describe('Json rules',()=>{
+  var json = new Json();
+
   beforeEach(() => {
     this.roboto = {
       'Roboto-Regular': {
@@ -56,6 +53,22 @@ describe('Json rules',()=>{
       'Roboto-Light': {
         'family': 'roboto',
         'format': ['.woff2', '.woff']
+      }
+    };
+    this.opensans = {
+      'Opensans-Regular': {
+        'family': 'opensans',
+        'format': [
+          '.woff2',
+          '.woff'
+        ]
+      },
+      'Opensans-Light': {
+        'family': 'opensans',
+        'format': [
+          '.woff2',
+          '.woff'
+        ]
       }
     };
     this.nexa = {
@@ -77,42 +90,85 @@ describe('Json rules',()=>{
   });
 
   it('addFont(): Should add Roboto-Light font', ()=> {
-    var addedFont = Json.addFont('Roboto-Light',this.roboto['Roboto-Light']);
-    assert.equal(addedFont,true);
+    return Util.loadFixture('test/fixture/Json/robotoLight.json')
+      .then((data) => {
+        json.addFont('Roboto-Light',this.roboto['Roboto-Light']);
+        assert.deepEqual(json.json,JSON.parse(data));
+      }, (error) => {
+        throw error;
+      });
   });
 
-  it('addSystemFont(): Should add Verdana-Regular font', ()=> {
-    var addedFont = Json.addSystemFont('Verdana-Regular',this.verdana['Verdana-Regular']);
-    assert.equal(addedFont,true);
+  it('addFont(): Should throw an Error', ()=> {
+    assert.throws(
+      json.addFont.bind(null, 'Roboto-Light',this.roboto['Roboto-Light'])
+    );
+  });
+
+  it('multiple methods: Should add some fonts and remove entire roboto tree', ()=> {
+    return Util.loadFixture('test/fixture/Json/removeFamily.json')
+      .then((data) => {
+        json.addFont('Opensans-Regular',this.opensans['Opensans-Regular'])
+          .addSystemFont('Verdana-Regular',this.verdana['Verdana-Regular'])
+          .removeFontFamily('roboto');
+        assert.deepEqual(json.json,JSON.parse(data));
+      }, (error) => {
+        throw error;
+      });
   });
 
   it('changeOutput(): Should change fonts output', ()=> {
-    var output = Json.changeOutput(this.output['output']);
-    assert.equal(output,true);
+    return Util.loadFixture('test/fixture/Json/output.json')
+      .then((data) => {
+        json.changeOutput(this.output['output']);
+        assert.deepEqual(json.json,JSON.parse(data));
+      }, (error) => {
+        throw error;
+      });
   });
 
-  it('getFontByName(): Should return the Roboto-Regular font', ()=> {
-    var font = Json.getFontByName('Roboto-Regular');
-    assert.deepEqual(font,this.roboto['Roboto-Regular']);
+  it('get(): Should get the output property', ()=> {
+    return Util.loadFixture('test/fixture/Json/get.json')
+      .then((data) => {
+        var output = json.get('output');
+        var parsed = JSON.parse(data);
+        assert.deepEqual(output,parsed.output);
+      }, (error) => {
+        throw error;
+      });
   });
 
-  it('getFontsByFamily(): Should return the entire roboto tree', ()=> {
-    var fonts = Json.getFontsByFamily('roboto');
-    assert.deepEqual(fonts,this.roboto);
+  it('getFontByName(): Should return the Opensans-Regular font', ()=> {
+    return Util.loadFixture('test/fixture/Json/get.json')
+      .then((data) => {
+        var font = json.getFontByName('Opensans-Regular');
+        var parsed = JSON.parse(data);
+        assert.deepEqual(font,parsed.fonts['Opensans-Regular']);
+      }, (error) => {
+        throw error;
+      });
   });
 
-  it('removeFont(): Should remove the Roboto-Light font', ()=> {
-    var result = Json.removeFont('Roboto-Light');
-    assert.equal(result,true);
+  it('getFontsByFamily(): Should return the entire opensans tree', ()=> {
+    return Util.loadFixture('test/fixture/Json/get.json')
+      .then((data) => {
+        json.addFont('Opensans-Light',this.opensans['Opensans-Light']);
+        var fonts = json.getFontsByFamily('opensans');
+        var parsed = JSON.parse(data);
+        assert.deepEqual(fonts,parsed.fonts);
+      }, (error) => {
+        throw error;
+      });
   });
 
-  it('removeSystemFont(): Should remove the Verdana-Regular font', ()=> {
-    var result = Json.removeSystemFont('Verdana-Regular');
-    assert.equal(result,true);
-  });
-
-  it('get(): Should get a property', ()=> {
-    var output = Json.get('output');
-    assert.deepEqual(output,this.output['output']);
+  it('removeFont(), removeSystemFont(): Should remove Opensans-Regular and Verdana-Regular fonts', ()=> {
+    return Util.loadFixture('test/fixture/Json/removeFonts.json')
+      .then((data) => {
+        json.removeFont('Opensans-Light')
+          .removeSystemFont('Verdana-Regular');
+        assert.deepEqual(json.json,JSON.parse(data));
+      }, (error) => {
+        throw error;
+      });
   });
 });
