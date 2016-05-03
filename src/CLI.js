@@ -68,7 +68,7 @@ class CLI{
         CLI.registerFonts(filesNames);
 
       CLI.logger.log('verbose',
-        '√ Fonts copied to system\'s fonts directory.'.green);
+        colors.green('√ Fonts copied to system\'s fonts directory.'));
     });
   }
 
@@ -191,8 +191,9 @@ class CLI{
                   reject(error);
                 else {
                   resolve();
-                  CLI.logger.log('verbose', '√ Fonts placed '.green +
-                  'in /fonts and font face overwritten in /css.'.green);
+                  CLI.logger.log('verbose',
+                    colors.green('√ Fonts placed ' +
+                    'in /fonts and font face overwritten in /css.'));
                 }
               });
           });
@@ -203,7 +204,7 @@ class CLI{
           else {
             resolve();
             CLI.logger.log('verbose',
-              '√ Fonts placed in /fonts and font face in /css.'.green);
+              colors.green('√ Fonts placed in /fonts and font face in /css.'));
           }
         });
       });
@@ -222,9 +223,17 @@ class CLI{
     args.global = yargs.argv.g;
   }
 
-  static execute(externalArguments){
-    var args = {};
-    var yargs = {};
+  static handleErrors(error){
+    if (error instanceof Error)
+      CLI.logger.log('verbose', error.message);
+    else
+      CLI.logger.log('verbose', error);
+  }
+
+  static setup(){
+    this.fontRepository = new FontRepository();
+    this.fontConverter = new FontConverter();
+    this.fontFaceCreator = new FontFaceCreator();
 
     this.logger = new winston.Logger({
       transports: [
@@ -235,10 +244,13 @@ class CLI{
       ],
       exitOnError: false
     });
+  }
 
-    this.fontRepository = new FontRepository();
-    this.fontConverter = new FontConverter();
-    this.fontFaceCreator = new FontFaceCreator();
+  static execute(externalArguments){
+    var args = {};
+    var yargs = {};
+
+    this.setup();
 
     checkUpdate({packageName: pkg.name,
       packageVersion: pkg.version,
@@ -285,16 +297,17 @@ class CLI{
       Util.createOrUseDirectory('tmp');
       Util.cleanDirectory('tmp');
 
-      if (this.global){
+      if (this.global)
         return this.chooseFonts()
           .then(this.downloadFonts)
-          .then(this.copyToSystemFontDirectory);
-      } else {
+          .then(this.copyToSystemFontDirectory)
+          .catch(this.handleErrors);
+      else
         return this.chooseFonts()
           .then(this.downloadFonts)
           .then(this.convertFonts)
-          .then(this.createFontFaceFile);
-      }
+          .then(this.createFontFaceFile)
+          .catch(this.handleErrors);
     }
   }
 }
