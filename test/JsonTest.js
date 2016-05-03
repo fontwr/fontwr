@@ -19,13 +19,6 @@ describe('Json methods requirements',()=>{
     sandbox.restore();
   });
 
-  it('readFile(): Should have a readFileSync method', () => {
-    var readFileSpy = sandbox.spy(fs, 'readFileSync');
-
-    json.readFile();
-    sinon.assert.calledOnce(readFileSpy);
-  });
-
   it('save(): Should have a createWriteStream method', () => {
     var writeFileSpy = sandbox.spy(fs,'createWriteStream');
     json.addFont('Roboto-Regular', {
@@ -38,6 +31,20 @@ describe('Json methods requirements',()=>{
     });
     json.save();
     sinon.assert.calledOnce(writeFileSpy);
+  });
+
+  it('fileExists(): Should have a statSync method', () => {
+    var statSyncSpy = sandbox.spy(fs, 'statSync');
+
+    json.fileExists();
+    sinon.assert.calledOnce(statSyncSpy);
+  });
+
+  it('readFile(): Should have a readFileSync method', () => {
+    var readFileSpy = sandbox.spy(fs, 'readFileSync');
+
+    json.readFile();
+    sinon.assert.calledOnce(readFileSpy);
   });
 });
 
