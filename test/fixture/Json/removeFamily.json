@@ -1,0 +1,17 @@
+{
+	"fonts": {
+    "Opensans-Regular": {
+			"family": "opensans",
+			"format": [
+				".woff2",
+				".woff"
+			]
+		}
+	},
+	"systemFonts": {
+    "Verdana-Regular": {
+      "format": [".woff"]
+    }
+	},
+	"output": {}
+}

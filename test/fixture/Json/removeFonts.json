@@ -1,0 +1,16 @@
+{
+	"fonts": {
+    "Opensans-Regular": {
+			"family": "opensans",
+			"format": [
+				".woff2",
+				".woff"
+			]
+		}
+	},
+	"systemFonts": {},
+	"output": {
+		"fonts": "fonts/",
+		"fontface": "css/"
+	}
+}
