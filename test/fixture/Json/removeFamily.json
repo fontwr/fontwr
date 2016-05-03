@@ -9,13 +9,9 @@
 		}
 	},
 	"systemFonts": {
-		"Nexa-Light": {
-			"format": [
-				".woff2"
-			]
-		},
     "Verdana-Regular": {
       "format": [".woff"]
     }
-	}
+	},
+	"output": {}
 }

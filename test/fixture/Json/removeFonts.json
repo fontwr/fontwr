@@ -8,13 +8,7 @@
 			]
 		}
 	},
-	"systemFonts": {
-		"Nexa-Light": {
-			"format": [
-				".woff2"
-			]
-		}
-	},
+	"systemFonts": {},
 	"output": {
 		"fonts": "fonts/",
 		"fontface": "css/"

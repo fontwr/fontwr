@@ -23,11 +23,7 @@ describe('Json methods requirements',()=>{
     var writeFileSpy = sandbox.spy(fs,'createWriteStream');
     json.addFont('Roboto-Regular', {
       'family': 'roboto',
-      'format': [
-        '.woff2',
-        '.woff',
-        '.eot'
-      ]
+      'format': ['.woff2','.woff','.eot']
     });
     json.save();
     sinon.assert.calledOnce(writeFileSpy);
@@ -44,6 +40,7 @@ describe('Json methods requirements',()=>{
     var readFileSpy = sandbox.spy(fs, 'readFileSync');
 
     json.readFile();
+    fs.unlinkSync(json.file);
     sinon.assert.calledOnce(readFileSpy);
   });
 });
@@ -65,17 +62,11 @@ describe('Json rules',()=>{
     this.opensans = {
       'Opensans-Regular': {
         'family': 'opensans',
-        'format': [
-          '.woff2',
-          '.woff'
-        ]
+        'format': ['.woff2','.woff']
       },
       'Opensans-Light': {
         'family': 'opensans',
-        'format': [
-          '.woff2',
-          '.woff'
-        ]
+        'format': ['.woff2','.woff']
       }
     };
     this.nexa = {
