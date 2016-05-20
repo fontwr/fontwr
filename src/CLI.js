@@ -270,7 +270,7 @@ class CLI{
         .command('list', 'List all availables fonts')
         .command('get', 'List all availables fonts')
         .example('fontwr get opensans', 'Get Open Sans font')
-        .example('fontwr roboto -g', 'Get Roboto and' +
+        .example('fontwr get roboto -g', 'Get Roboto and' +
         'install into system\'s font directory')
         .describe('h', 'Show this help')
         .describe('g', 'Download font to the system\'s font directory')
