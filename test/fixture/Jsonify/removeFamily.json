@@ -13,5 +13,8 @@
       "format": [".woff"]
     }
 	},
-	"output": {}
+	"output": {
+		"fonts": "fonts/",
+		"fontface": "css/"
+	}
 }
