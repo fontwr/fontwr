@@ -5,8 +5,8 @@ const ttf2woff = require('ttf2woff');
 const ttf2woff2 = require('ttf2woff2');
 const ttf2eot = require('ttf2eot');
 
-module.exports = class FontConverter{
-  convert(file, extension){
+module.exports = class FontConverter {
+  convert(file, extension) {
     var converter = [];
     converter['.woff2'] = ttf2woff2;
     converter['.woff'] = ttf2woff;

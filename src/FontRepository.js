@@ -4,8 +4,8 @@ const _ = require('underscore');
 const wget = require('wget');
 const https = require('follow-redirects').https;
 
-module.exports = class FontRepository{
-  constructor(){
+module.exports = class FontRepository {
+  constructor() {
     this.baseRawPath = 'https://raw.githubusercontent.com/raphaklaus/' +
       'fontwr-fonts/master/fonts/';
     this.baseAPIPath = 'api.github.com';
@@ -13,15 +13,15 @@ module.exports = class FontRepository{
     this.output = 'tmp/';
   }
 
-  set fontName(value){
+  set fontName(value) {
     this._fontName = value.toLowerCase();
   }
 
-  get fontName(){
+  get fontName() {
     return this._fontName;
   }
 
-  verify(){
+  verify() {
     return new Promise((resolve, reject) => {
       var options = {
         host: this.baseAPIPath,
@@ -34,7 +34,7 @@ module.exports = class FontRepository{
 
       https.get(options, (res) => {
         var body = [];
-        if (res.statusCode === 200){
+        if (res.statusCode === 200) {
           res.on('data', (chunk) => {
             body += chunk;
           });
@@ -53,7 +53,7 @@ module.exports = class FontRepository{
     });
   }
 
-  download(fileName){
+  download(fileName) {
     return new Promise((resolve, reject) => {
       wget.download(this.baseRawPath + this._fontName + '/' + fileName + '.ttf',
       this.output + fileName + '.ttf')
@@ -66,7 +66,7 @@ module.exports = class FontRepository{
     });
   }
 
-  list(){
+  list() {
     return new Promise((resolve, reject) => {
       var options = {
         host: this.baseAPIPath,
@@ -79,7 +79,7 @@ module.exports = class FontRepository{
 
       https.get(options, (res) => {
         var body = [];
-        if (res.statusCode === 200){
+        if (res.statusCode === 200) {
           res.on('data', (chunk) => {
             body += chunk;
           });

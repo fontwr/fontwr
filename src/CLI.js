@@ -11,10 +11,11 @@ const inquirer = require('inquirer'),
   colors = require('colors'),
   winston = require('winston'),
   Util = require('../lib/Util.js'),
+  Jsonify = require('../lib/Jsonify.js'),
   Spinner = require('cli-spinner').Spinner;
 
-class CLI{
-  static filter(fonts){
+class CLI {
+  static filter(fonts) {
     var filteredFonts = [];
     fonts.forEach((font) =>{
       if (font.name.match(/.ttf$/i))
@@ -23,7 +24,7 @@ class CLI{
     return filteredFonts;
   }
 
-  static listAllFonts(){
+  static listAllFonts() {
     this.fontRepository.list().then((list) => {
       list.forEach((element) => {
         CLI.logger.log('verbose', '- ' + element);
@@ -33,7 +34,7 @@ class CLI{
     });
   }
 
-  static registerFonts(filesNames){
+  static registerFonts(filesNames) {
     const regedit = require('regedit');
     filesNames.forEach((fileName) => {
       var registryName = fileName.value + ' (TrueType)';
@@ -51,13 +52,13 @@ class CLI{
     });
   }
 
-  static copyToSystemFontDirectory(filesNames){
+  static copyToSystemFontDirectory(filesNames) {
     var fontsDirectory = [];
     fontsDirectory.win32 = '\\Windows\\Fonts';
     fontsDirectory.darwin = '/Library/Fonts';
     fontsDirectory.linux = '/usr/share/fonts';
 
-    cpr('tmp', fontsDirectory[process.platform],{
+    cpr('tmp', fontsDirectory[process.platform], {
       deleteFirst: false,
       overwrite: false,
       confirm: true
@@ -72,7 +73,7 @@ class CLI{
     });
   }
 
-  static chooseFonts(){
+  static chooseFonts() {
     return new Promise((resolve, reject) => {
       return CLI.fontRepository.verify().then((data) => {
         return inquirer.prompt([{
@@ -96,7 +97,7 @@ class CLI{
     });
   }
 
-  static downloadFonts(fonts){
+  static downloadFonts(fonts) {
     return new Promise((resolve, reject) => {
       var downloadQueue = [];
       fonts.fontFamilies.forEach((fontFamily) => {
@@ -116,7 +117,7 @@ class CLI{
     });
   }
 
-  static convertFonts(filesNames){
+  static convertFonts(filesNames) {
     return new Promise((resolve, reject) => {
       return inquirer.prompt([{
         type: 'checkbox',
@@ -125,7 +126,7 @@ class CLI{
         name: 'extensions',
         choices: [{name: '.woff2'}, {name: '.woff'},
         {name: '.eot'}, {name: '.ttf'}],
-        validate: function(answers){
+        validate: function(answers) {
           if (answers.length === 0)
             return 'You must choose at least 1 format.';
           return true;
@@ -167,7 +168,7 @@ class CLI{
     });
   }
 
-  static createFontFaceFile(fontsInfo){
+  static createFontFaceFile(fontsInfo) {
     return new Promise((resolve, reject) => {
       Util.createOrUseDirectory('css');
 
@@ -177,7 +178,7 @@ class CLI{
       });
 
       fs.stat('css/fonts.css', (error, stat) => {
-        if (stat){
+        if (stat) {
           inquirer.prompt([{
             type: 'confirm',
             pageSize: 10,
@@ -211,26 +212,26 @@ class CLI{
     });
   }
 
-  static useExternalArguments(args, external){
+  static useExternalArguments(args, external) {
     args.command = external.command;
     args.fontName = external.fontName;
     args.global = external.global;
   }
 
-  static useYargs(args, yargs){
+  static useYargs(args, yargs) {
     args.command = yargs.argv._[0];
     args.fontName = yargs.argv._[1];
     args.global = yargs.argv.g;
   }
 
-  static handleErrors(error){
+  static handleErrors(error) {
     if (error instanceof Error)
       CLI.logger.log('verbose', error.message);
     else
       CLI.logger.log('verbose', error);
   }
 
-  static setup(){
+  static setup() {
     this.fontRepository = new FontRepository();
     this.fontConverter = new FontConverter();
     this.fontFaceCreator = new FontFaceCreator();
@@ -246,7 +247,7 @@ class CLI{
     });
   }
 
-  static execute(externalArguments){
+  static execute(externalArguments) {
     var args = {};
     var yargs = {};
 
@@ -282,7 +283,7 @@ class CLI{
 
     if (args.command === 'list')
       CLI.listAllFonts();
-    else if (args.command === 'get'){
+    else if (args.command === 'get') {
       if (!externalArguments)
         yargs.reset()
           .demand(2)

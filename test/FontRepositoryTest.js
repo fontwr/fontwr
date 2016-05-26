@@ -88,7 +88,7 @@ describe('FontRepository rules', () => {
       .get(fontRepository.repositoryPath + fontRepository.fontName)
       .reply(statusCode, fixture);
 
-    return fontRepository.verify().then(function(data){
+    return fontRepository.verify().then(function(data) {
       assert.deepEqual(fixture, data);
     }, () => {
       throw new Error('Expected to be a 200');
@@ -105,7 +105,7 @@ describe('FontRepository rules', () => {
 
     return fontRepository.verify().then(() => {
       throw new Error('Expected to be a 404');
-    }, function(error){
+    }, function(error) {
       assert.equal(error.message, new Error('Font not found. ' +
         'Try running the command: fontwr list').message);
     });
@@ -121,7 +121,7 @@ describe('FontRepository rules', () => {
 
     return fontRepository.verify().then(() => {
       throw new Error('Expected to be a 403');
-    }, function(error){
+    }, function(error) {
       assert.equal(error.message,
         new Error('HTTP Status Code: ' + statusCode).message);
     });
@@ -137,7 +137,7 @@ describe('FontRepository rules', () => {
 
     return fontRepository.verify().then(() => {
       throw new Error('Expected to be an error.');
-    }, function(error){
+    }, function(error) {
       assert.equal(error.message, new Error(errorMessage).message);
     });
   });
@@ -149,7 +149,7 @@ describe('FontRepository rules', () => {
       .get(fontRepository.repositoryPath)
       .reply(statusCode, fixture);
 
-    return fontRepository.list().then(function(data){
+    return fontRepository.list().then(function(data) {
       assert.deepEqual(_.pluck(fixture, 'name'), data);
     }, () => {
       throw new Error('Expected to be a 200');
@@ -165,7 +165,7 @@ describe('FontRepository rules', () => {
 
     return fontRepository.list().then(() => {
       throw new Error('Expected to be a 404');
-    }, function(error){
+    }, function(error) {
       assert.equal(error.message, new Error('Something were wrong. ' +
       'Repository not found: ' + fontRepository.baseAPIPath +
       fontRepository.repositoryPath).message);
@@ -181,7 +181,7 @@ describe('FontRepository rules', () => {
 
     return fontRepository.list().then(() => {
       throw new Error('Expected to be a 403');
-    }, function(error){
+    }, function(error) {
       assert.equal(error.message,
         new Error('HTTP Status Code: ' + statusCode).message);
     });
@@ -196,7 +196,7 @@ describe('FontRepository rules', () => {
 
     return fontRepository.list().then(() => {
       throw new Error('Expected to be an error.');
-    }, function(error){
+    }, function(error) {
       assert.equal(error.message, new Error(errorMessage).message);
     });
   });
