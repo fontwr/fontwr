@@ -32,7 +32,7 @@ Clone, then:
 
 ## Fonts repository
 
-[fontwr-fonts](https://github.com/raphaklaus/fontwr/edit/master/README.md)
+[fontwr-fonts](https://github.com/raphaklaus/fontwr-fonts)
 
 --
 
