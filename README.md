@@ -30,6 +30,10 @@ Clone, then:
 
 `npm test`
 
+## Fonts repository
+
+[fontwr-fonts](https://github.com/raphaklaus/fontwr/edit/master/README.md)
+
 --
 
 Logo designed by [Beatriz Cajaty](http://be.net/Cajaty).
