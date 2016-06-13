@@ -20,7 +20,7 @@ describe('Jsonify methods requirements', () =>{
   });
 
   it('save(): Should have a createWriteStream method', () => {
-    var writeFileSpy = sandbox.spy(fs, 'createWriteStream');
+    var writeFileSpy = sandbox.spy(fs, 'writeFile');
     jsonify.addFont('Roboto-Regular', {
       'family': 'roboto',
       'format': ['.woff2', '.woff', '.eot']
@@ -116,7 +116,7 @@ describe('Jsonify rules', ()=> {
         });
     });
 
-  it('changeOutput(): Should change fonts output', ()=> {
+  it('changeOutput(): Should change fonts output', () => {
     return Util.loadFixture('test/fixture/Jsonify/output.json')
       .then((data) => {
         jsonify.changeOutput(this.output['output']);

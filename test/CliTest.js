@@ -8,9 +8,15 @@ const CLI = require('../src/CLI.js'),
   wget = require('wget'),
   EventEmitter = require('events').EventEmitter,
   sinon = require('sinon'),
+  promisify = require('es6-promisify'),
+  fs = require('fs'),
   nock = require('nock');
 
 chai.use(require('chai-fs'));
+
+const readFile = promisify(fs.readFile);
+const access = promisify(fs.access);
+const unlink = promisify(fs.unlink);
 
 describe('CLI rules', () => {
   var inquirerStub = {};
@@ -75,4 +81,54 @@ describe('CLI rules', () => {
         });
       });
   });
+});
+
+describe('CLI generating fontwr.json', () => {
+  afterEach(() => {
+    return access('fontwr.json', fs.F_OK).then(() => unlink('fontwr.json'));
+  });
+
+  it('execute(): Should add Roboto-Light to fontwr.json', () => {
+    var fileFixtureRoboto,
+      parameters = {
+        command: 'add',
+        fontName: 'roboto/Roboto-Light'
+      };
+
+    return Util.loadFixture('test/fixture/Jsonify/' +
+    'fontwrJsonRobotoLightAllFormats.json', 'utf8')
+    .then((fixture) => {
+      fileFixtureRoboto = fixture;
+    })
+    .then(() => CLI.execute(parameters))
+    .then(() => readFile('fontwr.json', 'utf8'))
+    .then((fontwrJsonFile) => {
+      assert.equal(fontwrJsonFile, fileFixtureRoboto);
+    });
+  });
+
+  it('execute(): Should add Roboto-Light and OpenSans-Regular to fontwr.json',
+    () => {
+      var fileFixtureRobotoAndOpenSans,
+        fontRobotoLight = {
+          command: 'add',
+          fontName: 'roboto/Roboto-Light'
+        },
+        fontOpenSansRegular = {
+          command: 'add',
+          fontName: 'opensans/OpenSans-Regular'
+        };
+
+      return Util.loadFixture('test/fixture/Jsonify/' +
+        'fontwrJsonRobotoLightAndOpenSansRegularAllFormats.json', 'utf8')
+      .then((fixture) => {
+        fileFixtureRobotoAndOpenSans = fixture;
+      })
+      .then(() => CLI.execute(fontRobotoLight))
+      .then(() => CLI.execute(fontOpenSansRegular))
+      .then(() => readFile('fontwr.json', 'utf8'))
+      .then((fontwrJsonFile) => {
+        assert.equal(fontwrJsonFile, fileFixtureRobotoAndOpenSans);
+      });
+    });
 });
