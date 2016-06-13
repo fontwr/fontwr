@@ -216,12 +216,20 @@ class CLI {
     args.command = external.command;
     args.fontName = external.fontName;
     args.global = external.global;
+    args.woff2 = external.W;
+    args.woff = external.w;
+    args.eot = external.e;
+    args.ttf = external.t;
   }
 
   static useYargs(args, yargs) {
     args.command = yargs.argv._[0];
     args.fontName = yargs.argv._[1];
     args.global = yargs.argv.g;
+    args.woff2 = yargs.argv.W;
+    args.woff = yargs.argv.w;
+    args.eot = yargs.argv.e;
+    args.ttf = yargs.argv.t;
   }
 
   static handleErrors(error) {
@@ -247,10 +255,41 @@ class CLI {
     });
   }
 
+  static buildFormats(args) {
+    let formats = [];
+
+    if (args.woff2)
+      formats.push('.woff2');
+
+    if (args.woff)
+      formats.push('.woff');
+
+    if (args.eot)
+      formats.push('.eot');
+
+    if (args.ttf)
+      formats.push('.ttf');
+
+    if (formats.length === 0)
+      formats = ['woff2', 'woff', 'eot', 'ttf'];
+
+    return formats;
+  }
+
+  static addFont(family, name, format) {
+    var tree = {
+      family: family,
+      format: format
+    };
+
+    var jsonify = new Jsonify();
+    jsonify.addFont(name, tree);
+    return jsonify.save();
+  }
+
   static execute(externalArguments) {
     var args = {};
     var yargs = {};
-
     this.setup();
 
     checkUpdate({packageName: pkg.name,
@@ -283,7 +322,18 @@ class CLI {
 
     if (args.command === 'list')
       CLI.listAllFonts();
-    else if (args.command === 'get') {
+    else if (args.command === 'add') {
+      if (!externalArguments)
+        yargs.reset()
+          .demand(2)
+          .example('fontwr add roboto/Roboto-Light', 'Add Roboto-Light')
+          .argv;
+
+      let fontSettings = args.fontName.split('/');
+      let family = fontSettings[0];
+      let fontName = fontSettings[1];
+      return CLI.addFont(family, fontName, CLI.buildFormats(args));
+    } else if (args.command === 'get') {
       if (!externalArguments)
         yargs.reset()
           .demand(2)
