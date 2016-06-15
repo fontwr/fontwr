@@ -12,8 +12,6 @@ const CLI = require('../src/CLI.js'),
   fs = require('fs'),
   nock = require('nock');
 
-require('events').EventEmitter.defaultMaxListeners = Infinity;
-
 chai.use(require('chai-fs'));
 
 const readFile = promisify(fs.readFile);
