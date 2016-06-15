@@ -131,4 +131,67 @@ describe('CLI generating fontwr.json', () => {
         assert.equal(fontwrJsonFile, fileFixtureRobotoAndOpenSans);
       });
     });
+
+  it('execute(): Should remove Roboto-Light from fontwr.json', () => {
+    var fileFixtureRobotoRegular,
+      fontRobotoLight = {
+        command: 'add',
+        fontName: 'roboto/Roboto-Light'
+      },
+      fontRobotoRegular = {
+        command: 'add',
+        fontName: 'roboto/Roboto-Regular'
+      },
+      fontRemoveRobotoLight = {
+        command: 'remove',
+        fontName: 'roboto/Roboto-Light'
+      };
+
+    return Util.loadFixture('test/fixture/Jsonify/' +
+      'fontwrJsonRobotoRegular.json', 'utf8')
+    .then((fixture) => {
+      fileFixtureRobotoRegular = fixture;
+    })
+    .then(() => CLI.execute(fontRobotoLight))
+    .then(() => CLI.execute(fontRobotoRegular))
+    .then(() => CLI.execute(fontRemoveRobotoLight))
+    .then(() => readFile('fontwr.json', 'utf8'))
+    .then((fontwrJsonFile) => {
+      assert.equal(fontwrJsonFile, fileFixtureRobotoRegular);
+    });
+  });
+
+  it('execute(): Should remove roboto tree from fontwr.json', () => {
+    var fileFixtureOpenSansRegular,
+      fontRobotoLight = {
+        command: 'add',
+        fontName: 'roboto/Roboto-Light'
+      },
+      fontRobotoRegular = {
+        command: 'add',
+        fontName: 'roboto/Roboto-Regular'
+      },
+      fontOpenSansRegular = {
+        command: 'add',
+        fontName: 'opensans/OpenSans-Regular'
+      },
+      fontRemoveRobotoLight = {
+        command: 'remove',
+        fontName: 'roboto'
+      };
+
+    return Util.loadFixture('test/fixture/Jsonify/' +
+      'fontwrJsonOpenSansRegular.json', 'utf8')
+    .then((fixture) => {
+      fileFixtureOpenSansRegular = fixture;
+    })
+    .then(() => CLI.execute(fontRobotoLight))
+    .then(() => CLI.execute(fontRobotoRegular))
+    .then(() => CLI.execute(fontOpenSansRegular))
+    .then(() => CLI.execute(fontRemoveRobotoLight))
+    .then(() => readFile('fontwr.json', 'utf8'))
+    .then((fontwrJsonFile) => {
+      assert.equal(fontwrJsonFile, fileFixtureOpenSansRegular);
+    });
+  });
 });

@@ -287,6 +287,20 @@ class CLI {
     return jsonify.save();
   }
 
+  static removeFont(name, family) {
+    if (family === undefined)
+      family = false;
+
+    var jsonify = new Jsonify();
+
+    if (family) {
+      jsonify.removeFontFamily(name);
+    } else {
+      jsonify.removeFont(name);
+    }
+    return jsonify.save();
+  }
+
   static execute(externalArguments) {
     var args = {};
     var yargs = {};
@@ -333,6 +347,22 @@ class CLI {
       let family = fontSettings[0];
       let fontName = fontSettings[1];
       return CLI.addFont(family, fontName, CLI.buildFormats(args));
+    } else if (args.command === 'remove') {
+      if (!externalArguments)
+        yargs.reset()
+          .demand(2)
+          .example('fontwr remove roboto/Roboto-Light', 'Remove Roboto-Light')
+          .example('fontwr remove roboto', 'Remove roboto tree')
+          .argv;
+
+      let fontSettings = args.fontName.split('/');
+      let family = fontSettings[0];
+      let fontName = fontSettings[1];
+
+      if (fontName === undefined) {
+        return CLI.removeFont(family, true);
+      }
+      return CLI.removeFont(fontName);
     } else if (args.command === 'get') {
       if (!externalArguments)
         yargs.reset()
